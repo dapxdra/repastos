@@ -1,6 +1,6 @@
 # Repastos
 
-SaaS multi-cliente para el manejo de repastos (potreros) en ganaderías de Costa Rica: lechería, carne y doble propósito.
+SaaS multi-cliente para el manejo de repastos (potreros) en ganaderías de Costa Rica: lechería, carne y doble propósito. cc
 
 ## Módulos
 
