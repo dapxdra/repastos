@@ -1,0 +1,1 @@
+ALTER TABLE "potreros" ADD COLUMN "altitud_msnm" integer;

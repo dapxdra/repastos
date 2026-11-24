@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+/*
+ * Sistema de diseño Repastos — "Organic Biophilic + Flat" (ui-ux-pro-max, perfil Agriculture/Farm Tech)
+ * Verde potrero + dorado de cosecha + azul cielo. Superficies planas, radios suaves, sombras naturales mínimas.
+ */
+/* Tema claro por defecto; el oscuro se activa con data-theme="dark" (selector Apariencia, ver components/tema.tsx) */
+:root {
+  color-scheme: light;
+  --background: #f7f9f5;
+  --surface: #ffffff;
+  --surface-2: #f0f4ee;
+  --foreground: #1d2b22;
+  --muted: #5d6b61;
+  --border: #e2e8df;
+  --primary: #1f7a3a;
+  --primary-strong: #176330;
+  --on-primary: #ffffff;
+  --primary-soft: #e7f4e9;
+  --accent: #a16207;
+  --accent-soft: #fdf5e3;
+  --sky: #2563a8;
+  --sky-soft: #e9f1fb;
+  --warning: #c2410c;
+  --warning-soft: #fef0e6;
+  --danger: #b91c1c;
+  --danger-soft: #fdecec;
+  --ring: #1f7a3a;
+  --shadow: 0 1px 2px rgb(29 43 34 / 0.04), 0 4px 14px rgb(29 43 34 / 0.035);
+  --paisaje-fondo: #e3f1e0;
+  --paisaje-opacidad: 0.95;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0e1410;
+  --surface: #151d17;
+  --surface-2: #1c261e;
+  --foreground: #e6ece3;
+  --muted: #9aa99b;
+  --border: #273329;
+  --primary: #4fb36b;
+  --primary-strong: #6cc786;
+  --on-primary: #08130b;
+  --primary-soft: #18301f;
+  --accent: #e3ad3b;
+  --accent-soft: #33280f;
+  --sky: #6aa6e6;
+  --sky-soft: #132538;
+  --warning: #f08a4b;
+  --warning-soft: #3a1d0d;
+  --danger: #f27272;
+  --danger-soft: #3a1414;
+  --ring: #6cc786;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  --paisaje-fondo: #14261a;
+  --paisaje-opacidad: 0.5;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-on-primary: var(--on-primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-sky: var(--sky);
+  --color-sky-soft: var(--sky-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: var(--shadow);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+/* Los hijos de grid no deben ensancharse por texto truncado (evita scroll horizontal en móvil) */
+.grid > * {
+  min-width: 0;
+}
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-border bg-surface shadow-card;
+  }
+  .card-pad {
+    @apply p-4 sm:p-5;
+  }
+  .input {
+    @apply block min-h-11 w-full rounded-lg border border-border bg-surface px-3 text-[15px] text-foreground transition-colors placeholder:text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25 aria-[invalid=true]:border-danger aria-[invalid=true]:ring-danger/20;
+  }
+  select.input {
+    @apply pr-8;
+  }
+  textarea.input {
+    @apply py-2;
+  }
+  .btn {
+    @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-[background-color,transform] duration-150 hover:bg-primary-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-secondary {
+    @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-foreground transition-colors duration-150 hover:bg-surface-2 active:scale-[0.98] disabled:opacity-60;
+  }
+  .btn-ghost {
+    @apply inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium text-muted transition-colors duration-150 hover:bg-surface-2 hover:text-foreground;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-foreground;
+  }
+  .hint {
+    @apply mt-1 text-xs text-muted;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap;
+  }
+}
+
+/* MapLibre */
+.maplibregl-ctrl-attrib {
+  font-size: 10px;
+}
