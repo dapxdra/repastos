@@ -18,12 +18,12 @@ export function AuthForm({ modo }: { modo: "sign-in" | "sign-up" }) {
     setError(null);
     setCargando(true);
     const f = new FormData(e.currentTarget);
-    const email = String(f.get("email"));
+    const email = String(f.get("email")).trim().toLowerCase();
     const password = String(f.get("password"));
     let error: { status?: number; message?: string } | null = null;
     try {
       ({ error } = registro
-        ? await authClient.signUp.email({ email, password, name: String(f.get("name") || email.split("@")[0]) })
+        ? await authClient.signUp.email({ email, password, name: String(f.get("name") || email.split("@")[0]).trim().slice(0, 80) })
         : await authClient.signIn.email({ email, password }));
     } catch (e) {
       // El cliente de Neon Auth lanza AuthApiError (p. ej. 401) en vez de devolver { error }
@@ -37,7 +37,11 @@ export function AuthForm({ modo }: { modo: "sign-in" | "sign-up" }) {
           ? "Correo o contraseña incorrectos."
           : /exist/i.test(error.message ?? "")
             ? "Ya existe una cuenta con ese correo."
-            : (error.message ?? "No se pudo completar la operación."),
+            : error.status === 429
+              ? "Demasiados intentos. Espera unos minutos e intenta de nuevo."
+              : /password/i.test(error.message ?? "")
+                ? "La contraseña no cumple los requisitos (mínimo 8 caracteres)."
+                : "No se pudo completar la operación. Intenta de nuevo.",
       );
       return;
     }
@@ -75,12 +79,12 @@ export function AuthForm({ modo }: { modo: "sign-in" | "sign-up" }) {
           {registro && (
             <div>
               <label className="label" htmlFor="name">Nombre</label>
-              <input className="input" id="name" name="name" autoComplete="name" />
+              <input className="input" id="name" name="name" autoComplete="name" maxLength={80} />
             </div>
           )}
           <div>
             <label className="label" htmlFor="email">Correo electrónico</label>
-            <input className="input" id="email" name="email" type="email" required autoComplete="email" inputMode="email" />
+            <input className="input" id="email" name="email" type="email" required autoComplete="email" inputMode="email" maxLength={254} />
           </div>
           <div>
             <label className="label" htmlFor="password">Contraseña</label>
@@ -92,6 +96,7 @@ export function AuthForm({ modo }: { modo: "sign-in" | "sign-up" }) {
                 type={ver ? "text" : "password"}
                 required
                 minLength={8}
+                maxLength={128}
                 autoComplete={registro ? "new-password" : "current-password"}
                 aria-describedby={registro ? "pw-hint" : undefined}
               />
@@ -104,8 +109,18 @@ export function AuthForm({ modo }: { modo: "sign-in" | "sign-up" }) {
                 {ver ? <EyeOff className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}
               </button>
             </div>
-            {registro && <p id="pw-hint" className="hint">Mínimo 8 caracteres.</p>}
+            {registro && <p id="pw-hint" className="hint">Mínimo 8 caracteres. Usa una frase larga que no uses en otros sitios.</p>}
           </div>
+
+          {registro && (
+            <label className="flex items-start gap-2.5 text-sm">
+              <input type="checkbox" name="acepto" required className="mt-0.5 size-5 shrink-0 accent-[var(--primary)]" />
+              <span>
+                Tengo 18 años o más y acepto los <Link href="/terminos" target="_blank" className="font-medium text-primary underline">Términos y condiciones</Link> y
+                la <Link href="/privacidad" target="_blank" className="font-medium text-primary underline">Política de privacidad</Link>.
+              </span>
+            </label>
+          )}
 
           <button className="btn w-full" disabled={cargando}>
             {cargando && <Loader2 className="size-4 animate-spin" aria-hidden />}
@@ -117,6 +132,9 @@ export function AuthForm({ modo }: { modo: "sign-in" | "sign-up" }) {
             ) : (
               <>¿Nuevo en Repastos? <Link className="font-semibold text-primary" href="/auth/sign-up">Crea una cuenta</Link></>
             )}
+          </p>
+          <p className="text-center text-xs text-muted">
+            <Link href="/terminos" className="hover:underline">Términos</Link> · <Link href="/privacidad" className="hover:underline">Privacidad</Link>
           </p>
         </form>
       </div>

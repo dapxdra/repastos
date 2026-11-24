@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth/server";
 // real (membresía/rol por organización) se valida en cada acción y route handler.
 export default auth.middleware({
   loginUrl: "/auth/sign-in",
-  publicRoutes: ["/", "/auth/sign-up"],
+  publicRoutes: ["/", "/auth/sign-up", "/terminos", "/privacidad"],
 });
 
 export const config = {

@@ -2,7 +2,8 @@
 // Usa Microsoft Edge instalado (playwright-core, channel "msedge").
 import { chromium } from "playwright-core";
 import assert from "node:assert/strict";
-import { mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { cuadro, geojsonCRTM05, kml, kmz, shapefileZip } from "./fixtures-mapa.mjs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
@@ -27,6 +28,7 @@ async function registrar(ctx, u) {
   await page.fill("#name", u.email.split("@")[0]);
   await page.fill("#email", u.email);
   await page.fill("#password", u.password);
+  await page.check("input[name=acepto]");
   await page.click("button:has-text('Crear cuenta')");
   await page.waitForURL(`${BASE}/app`, { timeout: 30_000 });
   // Next 16 mantiene la ruta anterior oculta (Activity); cargamos un documento limpio.
@@ -46,6 +48,13 @@ try {
   assert.match(pAnon.url(), /\/auth\/sign-in/);
   await shot(pAnon, "02-login");
   ok("Sin sesión, /app redirige a /auth/sign-in");
+  for (const ruta of ["/terminos", "/privacidad"]) {
+    const r = await pAnon.goto(`${BASE}${ruta}`);
+    assert.equal(r.status(), 200);
+    assert.ok(pAnon.url().endsWith(ruta));
+  }
+  await pAnon.getByText("Ley N.º 8968").first().waitFor();
+  ok("Términos y Política de privacidad son públicos");
 
   // 2. Registro y ganadería en manzanas
   const ctxA = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -54,6 +63,10 @@ try {
   await page.getByLabel("Nombre").fill(`Lechería E2E ${stamp}`);
   await page.getByLabel("Tipo de producción").selectOption("leche");
   await page.getByLabel("Unidad de área").selectOption("mz");
+  await page.click("button:has-text('Crear ganadería')");
+  await page.getByRole("alert").filter({ hasText: "Debes aceptar" }).waitFor();
+  ok("Sin aceptar los términos, el servidor rechaza crear la ganadería");
+  await page.check("input[name=aceptaTerminos]");
   await page.click("button:has-text('Crear ganadería')");
   await page.waitForURL(/\/app\/lecheria-e2e-/, { timeout: 30_000 });
   const slug = new URL(page.url()).pathname.split("/")[2];
@@ -134,7 +147,7 @@ try {
   await formProd.getByLabel("Nombre comercial").fill("Herbicida E2E");
   await formProd.locator("select[name=tipo]").selectOption("herbicida");
   await formProd.getByLabel("Unidad", { exact: true }).selectOption("L");
-  await formProd.getByLabel("Período de reingreso (días)").fill("15");
+  await formProd.getByLabel("Carencia de pastoreo (días)").fill("15");
   await formProd.getByLabel("Retiro leche (d)").fill("3");
   await formProd.getByLabel("Precio por unidad (₡)").fill("8000");
   await formProd.getByRole("button", { name: "Agregar producto" }).click();
@@ -165,7 +178,7 @@ try {
   await page.getByText("₡32").first().waitFor();
   await page.getByLabel("Responsable").fill("Juan");
   await page.click("button:has-text('Registrar aplicación')");
-  await guardado(page, "Potreros en espera hasta");
+  await guardado(page, "Sin pastoreo hasta");
   await page.locator("section", { hasText: "Potreros en tiempo de espera" }).getByText("Potrero 2").waitFor();
   await shot(page, "06-aplicaciones");
   ok("Aplicación: 2 L/mz × 2 mz = 4 L, costo ₡32 000, Potrero 2 en espera 15 días");
@@ -179,7 +192,7 @@ try {
     sel.value = opt.value;
   });
   await page.locator("section", { hasText: "Mover lote" }).getByRole("button", { name: "Mover", exact: true }).click();
-  await page.getByRole("alert").filter({ hasText: "Potrero en espera por Herbicida E2E" }).waitFor();
+  await page.getByRole("alert").filter({ hasText: "Potrero bloqueado por Herbicida E2E" }).waitFor();
   ok("Tiempo de espera: el servidor rechaza mover ganado a un potrero bloqueado");
 
   // 10. Aforo y lluvia
@@ -187,7 +200,7 @@ try {
   await page.getByLabel("Milímetros").fill("12.5");
   await page.click("button:has-text('Guardar'):near(:text('Milímetros'))");
   await guardado(page, "12.5 mm registrados");
-  await page.getByLabel("Potrero", { exact: true }).selectOption({ label: "Potrero 1" });
+  await elegir(page.getByLabel("Potrero", { exact: true }), "Potrero 1 ");
   await page.getByLabel("kg MS/ha").fill("2500");
   await page.click("button:has-text('Guardar aforo')");
   await guardado(page, "Aforo registrado");
@@ -557,7 +570,10 @@ try {
   await shot(pm, "10-movil-inicio", false);
   const anchoInicio = await pm.evaluate(() => document.documentElement.scrollWidth);
   assert.ok(anchoInicio <= 390, `scroll horizontal en Inicio móvil (${anchoInicio}px)`);
-  await nav.getByRole("link", { name: "Aplicaciones" }).click();
+  // Aplicaciones está dentro de «Más» en la barra inferior
+  await nav.getByRole("link", { name: "Más" }).click();
+  await pm.waitForURL(/\/mas$/);
+  await pm.getByRole("main").getByRole("link", { name: "Aplicaciones" }).click();
   await pm.waitForURL(/aplicaciones/);
   await pm.getByRole("heading", { name: "Aplicaciones", level: 1 }).waitFor();
   await shot(pm, "11-movil-aplicaciones", false);
@@ -583,12 +599,109 @@ try {
   await registrar(ctxB, B);
   const pB = await ctxB.newPage();
   await pB.goto(`${BASE}/app/${slug}/aplicaciones`);
-  await pB.getByText("This page could not be found").waitFor();
+  await pB.getByTestId("no-encontrado").waitFor();
   const htmlB = await pB.content();
   assert.ok(!htmlB.includes("Herbicida E2E") && !htmlB.includes(`Lechería E2E ${stamp}`), "fuga de datos de A");
   const fB = await ctxB.request.get(`${BASE}${href}`, { maxRedirects: 0 });
   assert.equal(fB.status(), 404);
   ok("Multi-tenant: otro usuario no ve la ganadería ni el archivo de A");
+  const expB = await ctxB.request.get(`${BASE}/api/orgs/${slug}/exportar`, { maxRedirects: 0 });
+  assert.equal(expB.status(), 404);
+  ok("Multi-tenant: otro usuario no puede exportar los datos de A");
+
+  // 16. Seguridad de entradas y rutas
+  const csrf = await ctxA.request.post(`${BASE}/api/orgs/${slug}/registros`, {
+    headers: { "Content-Type": "text/plain", Origin: "https://sitio-malicioso.example" },
+    data: JSON.stringify({ tipo: "lluvia", datos: { fincaId: "00000000-0000-0000-0000-000000000000", fecha: "2026-01-01", mm: "5" } }),
+  });
+  assert.equal(csrf.status(), 403);
+  ok("CSRF: la cola de registros rechaza peticiones de otro origen");
+  const raro = await ctxA.request.get(`${BASE}/api/orgs/${slug}/archivos/1%27%20or%20%271%27=%271`, { maxRedirects: 0 });
+  assert.equal(raro.status(), 404);
+  await page.goto(`${BASE}/app/x%27%3Bdrop%20table%20potreros--`);
+  await page.getByTestId("no-encontrado").waitFor();
+  ok("Ids y slugs manipulados devuelven 404 sin tocar la base de datos");
+  const exp = await ctxA.request.get(`${BASE}/api/orgs/${slug}/exportar`);
+  assert.equal(exp.status(), 200);
+  assert.match(exp.headers()["cache-control"] ?? "", /no-store/);
+  const datosExp = await exp.json();
+  assert.ok(datosExp.potreros.length > 0 && datosExp.ganaderia.nombre.includes("Lechería E2E"));
+  ok(`Exportación JSON de la ganadería (${datosExp.potreros.length} potreros)`);
+
+  // 17. Solo usuarios autenticados: todas las páginas, APIs y acciones
+  const dirOrg = join(import.meta.dirname, "..", "src", "app", "app", "[slug]");
+  const paginas = [
+    "",
+    ...readdirSync(dirOrg, { withFileTypes: true })
+      .filter((d) => d.isDirectory() && existsSync(join(dirOrg, d.name, "page.tsx")))
+      .map((d) => `/${d.name}`),
+    `/potreros/${datosExp.potreros[0].id}`,
+  ];
+  assert.ok(paginas.length >= 18, "no se encontraron las páginas de la ganadería");
+  const anonimo = await browser.newContext();
+  const alLogin = (r) =>
+    (r.status() >= 300 && r.status() < 400 && /\/auth\/sign-in/.test(r.headers().location ?? "")) || r.status() === 401;
+  for (const ruta of ["/app", ...paginas.map((x) => `/app/${slug}${x}`)]) {
+    const r = await anonimo.request.get(`${BASE}${ruta}`, { maxRedirects: 0 });
+    assert.ok(alLogin(r), `sin sesión se pudo abrir ${ruta} (${r.status()})`);
+  }
+  const apis = [
+    ["get", `/api/orgs/${slug}/exportar`],
+    ["get", `/api/orgs/${slug}/archivos/${href.split("/").pop()}`],
+    ["post", `/api/orgs/${slug}/registros`],
+  ];
+  for (const [m, ruta] of apis) {
+    const r = await anonimo.request[m](`${BASE}${ruta}`, {
+      maxRedirects: 0,
+      headers: { "Content-Type": "application/json", Origin: BASE },
+      ...(m === "post" ? { data: "{}" } : {}),
+    });
+    assert.ok(alLogin(r), `sin sesión se pudo usar ${ruta} (${r.status()})`);
+  }
+  ok(`Sin sesión: las ${paginas.length + 1} páginas y ${apis.length} APIs redirigen al login o responden 401`);
+
+  // Usuario autenticado pero ajeno a la ganadería: ninguna página muestra datos
+  for (const ruta of paginas) {
+    const r = await ctxB.request.get(`${BASE}/app/${slug}${ruta}`);
+    const html = await r.text();
+    assert.ok(!html.includes(`Lechería E2E ${stamp}`) && !html.includes("Herbicida E2E"), `B vio datos de A en ${ruta}`);
+    assert.ok(r.status() === 404 || html.includes('data-testid="no-encontrado"'), `B abrió ${ruta} (${r.status()})`);
+  }
+  ok(`Usuario ajeno: las ${paginas.length} páginas de la ganadería responden «no encontrado» sin datos`);
+
+  // Acción de servidor reenviada (la misma petición que hace el navegador) sin sesión y por un usuario ajeno
+  await ir("/ajustes");
+  const capturada = page.waitForRequest((r) => r.method() === "POST" && !!r.headers()["next-action"]);
+  await page.getByLabel("Nombre de la finca").fill("Finca capturada");
+  await page.click("button:has-text('Agregar finca')");
+  const req = await capturada;
+  await guardado(page, "Finca capturada");
+  const fincas = async () => (await (await ctxA.request.get(`${BASE}/api/orgs/${slug}/exportar`)).json()).fincas.length;
+  const antes = await fincas();
+  const reenvio = {
+    headers: { "Next-Action": req.headers()["next-action"], "Content-Type": req.headers()["content-type"], Accept: "text/x-component", Origin: BASE },
+    data: req.postDataBuffer(),
+    maxRedirects: 0,
+  };
+  const rAnon = await anonimo.request.post(`${BASE}/app/${slug}/ajustes`, reenvio);
+  assert.ok(alLogin(rAnon), `acción sin sesión: ${rAnon.status()}`);
+  await ctxB.request.post(`${BASE}/app/${slug}/ajustes`, reenvio);
+  assert.equal(await fincas(), antes, "una acción reenviada sin permiso creó datos");
+  ok("Acción de servidor reenviada sin sesión o por un usuario ajeno: rechazada, sin cambios en los datos");
+  await anonimo.close();
+
+  // 18. Eliminar la ganadería (derecho de supresión)
+  await ir("/ajustes");
+  await page.getByText("Eliminar la ganadería").click();
+  await page.getByLabel(/para confirmar/).fill("otro nombre");
+  await page.click("button:has-text('Eliminar definitivamente')");
+  await page.getByRole("alert").filter({ hasText: "nombre exacto" }).waitFor();
+  await page.getByLabel(/para confirmar/).fill(`Lechería E2E ${stamp}`);
+  await page.click("button:has-text('Eliminar definitivamente')");
+  await page.waitForURL(`${BASE}/app`, { timeout: 30_000 });
+  await page.goto(`${BASE}/app/${slug}`);
+  await page.getByTestId("no-encontrado").waitFor();
+  ok("El propietario elimina la ganadería con confirmación y deja de existir");
 
   console.log(`\nE2E OK — slug=${slug}`);
 } catch (e) {
@@ -596,7 +709,7 @@ try {
   process.exitCode = 1;
   if (SHOTS) {
     const pages = browser.contexts().flatMap((c) => c.pages());
-    await pages.at(-1)?.screenshot({ path: `${SHOTS}/fallo.png`, fullPage: true }).catch(() => {});
+    for (const [i, pg] of pages.entries()) await pg.screenshot({ path: `${SHOTS}/fallo-${i}.png`, fullPage: true }).catch(() => {});
   }
 } finally {
   await browser.close();

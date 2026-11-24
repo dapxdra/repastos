@@ -1,10 +1,13 @@
 "use server";
 import { redirect } from "next/navigation";
+import { and, count, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@/db";
-import { requireUsuario, slugify } from "@/lib/tenant";
+import { ErrorUsuario, requireUsuario, slugify } from "@/lib/tenant";
 import { datos, ejecutar, v, type Resultado } from "@/lib/acciones";
 import { PRODUCTOS_BASE } from "@/lib/dominio";
+import { MAX_GANADERIAS_PROPIAS } from "@/lib/planes";
+import { VERSION_LEGAL } from "@/lib/legal";
 
 export async function crearOrganizacion(_p: Resultado, fd: FormData) {
   let slug = "";
@@ -15,12 +18,34 @@ export async function crearOrganizacion(_p: Resultado, fd: FormData) {
         nombre: v.texto(80),
         tipoProduccion: z.enum(["leche", "carne", "doble_proposito"]),
         unidadArea: z.enum(["ha", "mz"]),
+        // Quien crea la ganadería es quien contrata el servicio: debe aceptar los Términos y la Política de Privacidad
+        aceptaTerminos: z.literal("on", { error: "Debes aceptar los Términos y la Política de Privacidad." }),
       })
       .parse(datos(fd));
+
+    const [{ n }] = await db
+      .select({ n: count() })
+      .from(schema.membresias)
+      .where(and(eq(schema.membresias.userId, user.id), eq(schema.membresias.rol, "propietario")));
+    if (n >= MAX_GANADERIAS_PROPIAS) {
+      throw new ErrorUsuario(`Puedes ser propietario de hasta ${MAX_GANADERIAS_PROPIAS} ganaderías. Escríbenos si necesitas más.`);
+    }
+
     slug = `${slugify(d.nombre) || "ganaderia"}-${crypto.randomUUID().slice(0, 6)}`;
 
     await db.transaction(async (tx) => {
-      const [org] = await tx.insert(schema.organizaciones).values({ ...d, slug }).returning();
+      const [org] = await tx
+        .insert(schema.organizaciones)
+        .values({
+          nombre: d.nombre,
+          tipoProduccion: d.tipoProduccion,
+          unidadArea: d.unidadArea,
+          slug,
+          terminosVersion: VERSION_LEGAL,
+          terminosAceptadosEn: new Date(),
+          terminosAceptadosPor: user.id,
+        })
+        .returning();
       await tx.insert(schema.membresias).values({ orgId: org.id, userId: user.id, email: user.email, rol: "propietario" });
       // Catálogo inicial: fertilizantes de composición estándar (sin precios ni agroquímicos).
       await tx.insert(schema.productos).values(

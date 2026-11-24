@@ -1,7 +1,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { ChevronsUpDown } from "lucide-react";
-import { requireOrg } from "@/lib/tenant";
+import { accesoOrg } from "@/lib/tenant";
+import { NoEncontrado } from "@/components/no-encontrado";
 import { PASTOS_CR, TIPOS_PRODUCCION } from "@/lib/dominio";
 import { BottomNav, Sidebar, SignOutButton } from "@/components/nav";
 import { Logo } from "@/components/logo";
@@ -19,7 +20,10 @@ export default function OrgLayout({ children, params }: LayoutProps<"/app/[slug]
 
 async function Shell({ params, children }: { params: Promise<{ slug: string }>; children: React.ReactNode }) {
   const { slug } = await params;
-  const { org, user, rol } = await requireOrg(slug);
+  // Sin sesión: redirige al login. Sin membresía: «no encontrada» y la página hija ni siquiera se renderiza.
+  const acceso = await accesoOrg(slug);
+  if (!acceso) return <NoEncontrado titulo="Ganadería no encontrada" />;
+  const { org, user, rol } = acceso;
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[256px_1fr] print:block">

@@ -1,12 +1,13 @@
 import { eq } from "drizzle-orm";
-import { Building2, Home, Users } from "lucide-react";
+import { Building2, CreditCard, Download, Home, ShieldCheck, Users } from "lucide-react";
 import { db, schema } from "@/db";
 import { puede, requireOrg } from "@/lib/tenant";
-import { PROVINCIAS_CR, TIPOS_PRODUCCION, formatArea } from "@/lib/dominio";
+import { PROVINCIAS_CR, TIPOS_PRODUCCION, fechaCR, formatArea, hoyCR } from "@/lib/dominio";
+import { ESTADOS_SUSCRIPCION, PLANES, estadoEfectivo, suscripcionesActivas } from "@/lib/planes";
 import { Card, PageHeader } from "@/components/ui";
-import { ActionForm, Field, Submit } from "@/components/forms";
+import { ActionForm, BotonAccion, Field, Submit } from "@/components/forms";
 import { REGIMENES_LLUVIA, regimenSugerido } from "@/lib/forraje";
-import { actualizarFinca, actualizarOrganizacion, agregarMiembro, crearFinca } from "../actions";
+import { actualizarFinca, actualizarOrganizacion, agregarMiembro, crearFinca, eliminarOrganizacion, quitarMiembro, salirDeGanaderia } from "../actions";
 
 export const metadata = { title: "Ajustes" };
 
@@ -19,8 +20,11 @@ const ROLES = {
 
 export default async function Ajustes({ params }: PageProps<"/app/[slug]/ajustes">) {
   const { slug } = await params;
-  const { org, rol } = await requireOrg(slug);
+  const { org, rol, user } = await requireOrg(slug);
   const esAdmin = puede(rol, "administrador");
+  const esPropietario = rol === "propietario";
+  const estado = estadoEfectivo(org, hoyCR());
+  const plan = PLANES[org.plan];
   const [fincas, miembros] = await Promise.all([
     db.select().from(schema.fincas).where(eq(schema.fincas.orgId, org.id)).orderBy(schema.fincas.nombre),
     db.select().from(schema.membresias).where(eq(schema.membresias.orgId, org.id)).orderBy(schema.membresias.email),
@@ -116,8 +120,13 @@ export default async function Ajustes({ params }: PageProps<"/app/[slug]/ajustes
           <ul className="mb-4 divide-y divide-border text-sm">
             {miembros.map((m) => (
               <li key={m.id} className="flex items-center justify-between gap-2 py-2.5">
-                <span className="truncate">{m.email}</span>
+                <span className="min-w-0 flex-1 truncate">{m.email}{m.userId === user.id && <span className="text-muted"> (tú)</span>}</span>
                 <span className="chip bg-surface-2 capitalize text-muted">{m.rol}</span>
+                {esAdmin && m.userId !== user.id && m.rol !== "propietario" && (m.rol !== "administrador" || esPropietario) && (
+                  <BotonAccion action={quitarMiembro.bind(null, slug, m.id)} className="btn-ghost min-h-9 px-2 text-danger" confirmar={`¿Quitar el acceso de ${m.email} a esta ganadería?`}>
+                    Quitar
+                  </BotonAccion>
+                )}
               </li>
             ))}
           </ul>
@@ -133,6 +142,56 @@ export default async function Ajustes({ params }: PageProps<"/app/[slug]/ajustes
           <dl className="mt-4 grid gap-2 text-xs text-muted sm:grid-cols-2">
             {Object.entries(ROLES).map(([r, d]) => <div key={r}><dt className="inline font-semibold capitalize text-foreground">{r}: </dt><dd className="inline">{d}</dd></div>)}
           </dl>
+        </Card>
+
+        <Card titulo="Membresía" icono={CreditCard}>
+          <dl className="grid grid-cols-2 gap-3 text-sm">
+            <div><dt className="text-muted">Plan</dt><dd className="font-semibold">{plan.nombre}</dd></div>
+            <div><dt className="text-muted">Estado</dt><dd className="font-semibold">{ESTADOS_SUSCRIPCION[estado]}</dd></div>
+            {estado === "prueba" && org.pruebaHasta && <div><dt className="text-muted">Prueba hasta</dt><dd className="font-semibold">{fechaCR(org.pruebaHasta)}</dd></div>}
+            {org.suscripcionVence && <div><dt className="text-muted">Próxima renovación</dt><dd className="font-semibold">{fechaCR(org.suscripcionVence.toISOString().slice(0, 10))}</dd></div>}
+            <div className="col-span-2">
+              <dt className="text-muted">Incluye</dt>
+              <dd>{(["potreros", "fincas", "miembros"] as const).map((r) => `${plan.limites[r] ?? "Sin límite de"} ${r}`).join(" · ")}</dd>
+            </div>
+          </dl>
+          <p className="mt-4 text-xs text-muted">
+            {suscripcionesActivas()
+              ? "Si la membresía vence, la ganadería queda en solo lectura: podrás consultar y exportar tus datos."
+              : "El pago en línea de membresías estará disponible pronto. Mientras tanto, todas las funciones están habilitadas."}
+          </p>
+        </Card>
+
+        <Card titulo="Tus datos" icono={ShieldCheck}>
+          <div className="space-y-4 text-sm">
+            {esAdmin && (
+              <div>
+                <a href={`/api/orgs/${slug}/exportar`} className="btn-secondary" download><Download className="size-4" aria-hidden />Descargar todos los datos (JSON)</a>
+                <p className="hint">Fincas, potreros, mapas, registros y equipo de esta ganadería.</p>
+              </div>
+            )}
+            {!esPropietario && (
+              <BotonAccion action={salirDeGanaderia.bind(null, slug)} className="btn-secondary" confirmar="¿Salir de esta ganadería? Perderás el acceso hasta que te vuelvan a agregar.">
+                Salir de esta ganadería
+              </BotonAccion>
+            )}
+            {esPropietario && (
+              <details className="rounded-xl border border-danger/40 p-3">
+                <summary className="cursor-pointer font-semibold text-danger">Eliminar la ganadería</summary>
+                <ActionForm action={eliminarOrganizacion.bind(null, slug)} className="mt-3 space-y-3">
+                  <p>Se borrarán <b>para siempre</b> todas las fincas, potreros, mapas, registros y archivos, y nadie del equipo tendrá acceso. Descarga tus datos antes si los necesitas.</p>
+                  <Field label={`Escribe «${org.nombre}» para confirmar`} name="confirmacion" required>
+                    <input className="input" autoComplete="off" />
+                  </Field>
+                  <Submit className="btn bg-danger text-background hover:bg-danger/90">Eliminar definitivamente</Submit>
+                </ActionForm>
+              </details>
+            )}
+            <p className="text-xs text-muted">
+              Consulta los <a href="/terminos" className="underline">Términos</a> y la <a href="/privacidad" className="underline">Política de privacidad</a>.
+              {org.terminosVersion && ` Aceptados (versión ${org.terminosVersion}).`}
+            </p>
+          </div>
         </Card>
       </div>
     </>

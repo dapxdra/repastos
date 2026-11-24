@@ -4,9 +4,10 @@ import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import turfArea from "@turf/area";
 import { db, schema } from "@/db";
-import { ErrorUsuario, puede, requireOrg } from "@/lib/tenant";
-import { subirObjeto } from "@/lib/storage";
-import { datos, ejecutar, v, type Resultado } from "@/lib/acciones";
+import { redirect } from "next/navigation";
+import { ErrorUsuario, idValido, puede, requireOrg, verificarLimite } from "@/lib/tenant";
+import { borrarObjeto, subirObjeto, tipoContenidoSeguro } from "@/lib/storage";
+import { datos, ejecutar, jsonSeguro, v, type Resultado } from "@/lib/acciones";
 import { COLORES_MODULO, MODULOS_SUGERIDOS, TIPOS_ZONA, TIPOS_ZONA_IDS, aHectareas, areaAprovechable, diasEntre, dosisPorHa, fechaCR, hoyCR, loteDeOrdeno, sumarDias } from "@/lib/dominio";
 import { recalcularExcluidas } from "@/lib/area-excluida";
 import { calibracionAlturaOrg, potrerosConForraje } from "@/lib/consultas";
@@ -20,6 +21,7 @@ type Tabla = typeof schema.fincas | typeof schema.potreros | typeof schema.lotes
 
 /** Verifica que un registro pertenezca a la organización (aislamiento entre clientes). */
 async function deLaOrg(tabla: Tabla, id: string, orgId: string) {
+  idValido(id);
   const [fila] = await db
     .select({ id: tabla.id })
     .from(tabla as typeof schema.fincas)
@@ -51,18 +53,36 @@ const esDuplicado = (e: unknown) => {
 /** Límite de cordura para un potrero dibujado (evita polígonos trazados con el mapa alejado). */
 const MAX_HA_POTRERO = 5000;
 
+/** [lng, lat] en WGS84; una altitud u otros valores extra (KML 3D) se descartan. */
+const coordenada = z
+  .tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)], z.number())
+  .transform(([x, y]) => [x, y]);
+/** Anillo de un polígono: se cierra si viene abierto y debe tener al menos 3 vértices distintos. */
+const anillo = z
+  .array(coordenada)
+  .max(50_000, "El polígono tiene demasiados vértices")
+  .transform((cs) => {
+    const [a, b] = [cs[0], cs.at(-1)];
+    return a && b && (a[0] !== b[0] || a[1] !== b[1]) ? [...cs, a] : cs;
+  })
+  .refine((cs) => cs.length >= 4, "El polígono necesita al menos 3 vértices");
+/** Solo se guarda { type, coordinates }: cualquier otra propiedad que mande el navegador se descarta. */
+const geometriaPoligono = z
+  .object({ type: z.literal("Polygon"), coordinates: z.array(anillo).min(1).max(500) }, { error: "Polígono inválido" })
+  .transform((g) => ({ type: "Polygon" as const, coordinates: g.coordinates }));
+
 const poligono = z
-  .string()
+  .string({ error: "Polígono inválido" })
+  .max(8_000_000, "El polígono es demasiado grande")
   .transform((s, ctx) => {
     try {
-      const g = JSON.parse(s);
-      if (g?.type !== "Polygon" || !Array.isArray(g.coordinates)) throw new Error();
-      return g as { type: "Polygon"; coordinates: number[][][] };
+      return JSON.parse(s) as unknown;
     } catch {
       ctx.addIssue({ code: "custom", message: "Polígono inválido" });
       return z.NEVER;
     }
   })
+  .pipe(geometriaPoligono)
   .refine(
     (g) => turfArea({ type: "Feature", geometry: g, properties: {} }) / 10_000 <= MAX_HA_POTRERO,
     `Un área no puede medir más de ${MAX_HA_POTRERO.toLocaleString("es-CR")} ha. Acerca el mapa a tu finca y vuelve a dibujarla.`,
@@ -81,7 +101,8 @@ const ejeLinea = z
   .refine((cs) => longitudM(cs) <= MAX_LONGITUD_M, `Una línea no puede medir más de ${MAX_LONGITUD_M / 1000} km.`);
 
 const ejeJson = z
-  .string()
+  .string({ error: "Línea inválida" })
+  .max(2_000_000, "La línea es demasiado grande")
   .transform((s, ctx) => {
     try {
       const g = JSON.parse(s);
@@ -134,11 +155,12 @@ export async function crearFinca(slug: string, _p: Resultado, fd: FormData) {
         provincia: v.opcional(40),
         canton: v.opcional(60),
         ubicacion: v.opcional(),
-        area: v.numOpc(),
+        area: v.numOpc(1_000_000),
         altitud: v.enteroOpc(0, 3800),
         regimen: regimenOpc(),
       })
       .parse(datos(fd));
+    await verificarLimite(org, "fincas");
     await db.insert(schema.fincas).values({
       altitudMsnm: d.altitud ?? null,
       regimenLluvia: d.regimen,
@@ -164,7 +186,7 @@ export async function crearPotrero(slug: string, _p: Resultado, fd: FormData) {
         fincaId: v.id(),
         nombre: v.texto(),
         tipoPasto: v.opcional(80),
-        area: v.numOpc(),
+        area: v.numOpc(10_000),
         diasDescanso: v.entero(1, 365).default(30),
         diasOcupacion: v.entero(1, 60).default(1),
         geometria: z.preprocess((x) => (x === "" ? undefined : x), poligono.optional()),
@@ -172,6 +194,7 @@ export async function crearPotrero(slug: string, _p: Resultado, fd: FormData) {
       })
       .parse({ diasDescanso: 30, diasOcupacion: 1, ...datos(fd) });
     await deLaOrg(schema.fincas, d.fincaId, org.id);
+    await verificarLimite(org, "potreros");
     const moduloId = await moduloValido(d.moduloId, org.id);
     // Si hay polígono, el área se calcula de él (m² → ha); si no, se usa la digitada.
     const areaHa = d.geometria
@@ -199,17 +222,18 @@ export async function crearPotrero(slug: string, _p: Resultado, fd: FormData) {
 export async function actualizarPotrero(slug: string, potreroId: string, _p: Resultado, fd: FormData) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    idValido(potreroId);
     await deLaOrg(schema.potreros, potreroId, org.id);
     const d = z
       .object({
         nombre: v.texto(),
         tipoPasto: v.opcional(80),
-        area: v.numOpc(),
+        area: v.numOpc(10_000),
         diasDescanso: v.entero(1, 365),
         diasOcupacion: v.entero(1, 60),
         notas: v.opcional(1000),
         moduloId: moduloOpc(),
-        descuento: v.numOpc(),
+        descuento: v.numOpc(10_000),
         altitud: v.enteroOpc(0, 4000),
       })
       .parse(datos(fd));
@@ -217,7 +241,7 @@ export async function actualizarPotrero(slug: string, potreroId: string, _p: Res
     const [actual] = await db
       .select({ geometria: schema.potreros.geometria, areaHa: schema.potreros.areaHa, excluida: schema.potreros.areaExcluidaHa })
       .from(schema.potreros)
-      .where(eq(schema.potreros.id, potreroId));
+      .where(and(eq(schema.potreros.id, potreroId), eq(schema.potreros.orgId, org.id)));
     const areaHa = actual?.geometria ? Number(actual.areaHa) : d.area == null ? null : aHectareas(d.area, org.unidadArea);
     const descuentoHa = d.descuento == null ? 0 : aHectareas(d.descuento, org.unidadArea);
     if (descuentoHa > 0 && areaHa != null && descuentoHa > areaHa - Number(actual?.excluida ?? 0) + 1e-9) {
@@ -237,7 +261,7 @@ export async function actualizarPotrero(slug: string, potreroId: string, _p: Res
         // Con polígono el área la manda el mapa
         ...(actual?.geometria ? {} : { areaHa: d.area == null ? null : aHectareas(d.area, org.unidadArea).toFixed(6) }),
       })
-      .where(eq(schema.potreros.id, potreroId));
+      .where(and(eq(schema.potreros.id, potreroId), eq(schema.potreros.orgId, org.id)));
     rev(slug);
     return "Potrero actualizado";
   });
@@ -289,13 +313,14 @@ export async function calcularAltitudes(slug: string, _p: Resultado, fd: FormDat
 export async function guardarGeometria(slug: string, potreroId: string, geojson: string): Promise<Resultado> {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    idValido(potreroId);
     await deLaOrg(schema.potreros, potreroId, org.id);
     const g = poligono.parse(geojson);
     const ha = turfArea({ type: "Feature", geometry: g, properties: {} }) / 10_000;
     const [p] = await db
       .update(schema.potreros)
       .set({ geometria: g, areaHa: ha.toFixed(6) })
-      .where(eq(schema.potreros.id, potreroId))
+      .where(and(eq(schema.potreros.id, potreroId), eq(schema.potreros.orgId, org.id)))
       .returning({ fincaId: schema.potreros.fincaId });
     await recalcularExcluidas(db, org.id, [p.fincaId]);
     rev(slug);
@@ -333,7 +358,7 @@ export async function importarPotreros(slug: string, payload: string): Promise<R
           .min(1, "Selecciona al menos un polígono.")
           .max(500, "Importa como máximo 500 polígonos a la vez."),
       })
-      .safeParse(JSON.parse(payload));
+      .safeParse(jsonSeguro(payload));
     if (!r.success) {
       // Mensaje con el número de fila para que el usuario sepa qué polígono corregir
       const i = r.error.issues[0];
@@ -371,6 +396,7 @@ export async function importarPotreros(slug: string, payload: string): Promise<R
     const zonasNuevas = d.items.filter((i) => i.zona);
     const nuevos = d.items.filter((i) => !i.potreroId && !i.zona);
     const existentes = d.items.filter((i) => i.potreroId && !i.zona);
+    if (nuevos.length) await verificarLimite(org, "potreros", nuevos.length);
     await db.transaction(async (tx) => {
       if (zonasNuevas.length) {
         await tx.insert(schema.zonas).values(
@@ -455,6 +481,7 @@ export async function crearZona(slug: string, _p: Resultado, fd: FormData) {
 export async function actualizarZona(slug: string, zonaId: string, _p: Resultado, fd: FormData) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    idValido(zonaId);
     const [zona] = await db
       .select({ eje: schema.zonas.eje, anchoM: schema.zonas.anchoM, fincaId: schema.zonas.fincaId })
       .from(schema.zonas)
@@ -472,7 +499,7 @@ export async function actualizarZona(slug: string, zonaId: string, _p: Resultado
     await db
       .update(schema.zonas)
       .set({ tipo: d.tipo, nombre: d.nombre, ...(geometria ? { geometria, areaHa: haDe(geometria).toFixed(6), anchoM: d.anchoM!.toFixed(2) } : {}) })
-      .where(eq(schema.zonas.id, zonaId));
+      .where(and(eq(schema.zonas.id, zonaId), eq(schema.zonas.orgId, org.id)));
     if (geometria) await recalcularExcluidas(db, org.id, [zona.fincaId]);
     rev(slug);
     return "Área actualizada";
@@ -482,6 +509,7 @@ export async function actualizarZona(slug: string, zonaId: string, _p: Resultado
 export async function guardarGeometriaZona(slug: string, zonaId: string, geojson: string): Promise<Resultado> {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    idValido(zonaId);
     const [actual] = await db
       .select({ tipo: schema.zonas.tipo, anchoM: schema.zonas.anchoM })
       .from(schema.zonas)
@@ -504,7 +532,7 @@ export async function guardarGeometriaZona(slug: string, zonaId: string, geojson
     const [zona] = await db
       .update(schema.zonas)
       .set(cambios)
-      .where(eq(schema.zonas.id, zonaId))
+      .where(and(eq(schema.zonas.id, zonaId), eq(schema.zonas.orgId, org.id)))
       .returning({ fincaId: schema.zonas.fincaId });
     await recalcularExcluidas(db, org.id, [zona.fincaId]);
     rev(slug);
@@ -515,6 +543,7 @@ export async function guardarGeometriaZona(slug: string, zonaId: string, geojson
 export async function eliminarZona(slug: string, zonaId: string, _p: Resultado) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    idValido(zonaId);
     const [zona] = await db
       .delete(schema.zonas)
       .where(and(eq(schema.zonas.id, zonaId), eq(schema.zonas.orgId, org.id)))
@@ -548,9 +577,9 @@ export async function crearLote(slug: string, _p: Resultado, fd: FormData) {
         nombre: v.texto(),
         categoria: z.enum(CATEGORIAS),
         cabezas: v.entero(0, 100000),
-        peso: v.numOpc(),
+        peso: v.numOpc(1500),
         moduloId: moduloOpc(),
-        suplemento: v.numOpc(),
+        suplemento: v.numOpc(100),
         consumoPct: pctOpc(),
       })
       .parse(datos(fd));
@@ -574,9 +603,10 @@ export async function crearLote(slug: string, _p: Resultado, fd: FormData) {
 export async function actualizarLote(slug: string, loteId: string, _p: Resultado, fd: FormData) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "operador");
+    idValido(loteId);
     await deLaOrg(schema.lotes, loteId, org.id);
     const d = z
-      .object({ nombre: v.texto(), categoria: z.enum(CATEGORIAS), cabezas: v.entero(0, 100000), peso: v.numOpc(), moduloId: moduloOpc(), suplemento: v.numOpc(), consumoPct: pctOpc() })
+      .object({ nombre: v.texto(), categoria: z.enum(CATEGORIAS), cabezas: v.entero(0, 100000), peso: v.numOpc(1500), moduloId: moduloOpc(), suplemento: v.numOpc(100), consumoPct: pctOpc() })
       .parse(datos(fd));
     await db
       .update(schema.lotes)
@@ -634,6 +664,7 @@ export async function crearModulosSugeridos(slug: string, _p: Resultado) {
 export async function actualizarModulo(slug: string, moduloId: string, _p: Resultado, fd: FormData) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    idValido(moduloId);
     await deLaOrg(schema.modulos, moduloId, org.id);
     const d = z.object({ nombre: v.texto(60), color: colorModulo() }).parse(datos(fd));
     try {
@@ -651,6 +682,7 @@ export async function actualizarModulo(slug: string, moduloId: string, _p: Resul
 export async function eliminarModulo(slug: string, moduloId: string, _p: Resultado) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    idValido(moduloId);
     await db.delete(schema.modulos).where(and(eq(schema.modulos.id, moduloId), eq(schema.modulos.orgId, org.id)));
     rev(slug);
     return "Módulo eliminado";
@@ -676,7 +708,7 @@ export async function asignarModulo(slug: string, _p: Resultado, fd: FormData) {
     rev(slug);
     const n = `${r.length} potrero${r.length === 1 ? "" : "s"}`;
     if (!moduloId) return `${n} sin módulo`;
-    const [m] = await db.select({ nombre: schema.modulos.nombre }).from(schema.modulos).where(eq(schema.modulos.id, moduloId));
+    const [m] = await db.select({ nombre: schema.modulos.nombre }).from(schema.modulos).where(and(eq(schema.modulos.id, moduloId), eq(schema.modulos.orgId, org.id)));
     return `${n} asignado${r.length === 1 ? "" : "s"} a ${m.nombre}`;
   });
 }
@@ -696,7 +728,7 @@ export async function moverLote(slug: string, _p: Resultado, fd: FormData) {
     const [lote] = await db
       .select({ cabezas: schema.lotes.cabezas, nombre: schema.lotes.nombre, moduloId: schema.lotes.moduloId, categoria: schema.lotes.categoria })
       .from(schema.lotes)
-      .where(eq(schema.lotes.id, d.loteId));
+      .where(and(eq(schema.lotes.id, d.loteId), eq(schema.lotes.orgId, org.id)));
     const ordeno = loteDeOrdeno(lote.categoria, org.tipoProduccion);
 
     // Idempotente: un registro reenviado desde la cola del celular no duplica el movimiento
@@ -744,7 +776,7 @@ export async function moverLote(slug: string, _p: Resultado, fd: FormData) {
     const [destino] = await db
       .select({ nombre: schema.potreros.nombre, moduloId: schema.potreros.moduloId })
       .from(schema.potreros)
-      .where(eq(schema.potreros.id, d.potreroId));
+      .where(and(eq(schema.potreros.id, d.potreroId), eq(schema.potreros.orgId, org.id)));
     await db.transaction(async (tx) => {
       // Un lote está en un solo potrero a la vez: cierra su pastoreo abierto.
       await tx
@@ -801,6 +833,7 @@ const valoresSalida = (s: Salida) => ({
 export async function sacarLote(slug: string, pastoreoId: string, _p: Resultado, fd?: FormData) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "operador");
+    idValido(pastoreoId);
     const s = salidaForm.and(cuandoForm).parse(fd ? datos(fd) : {});
     const cuando = momento(s.cuando);
     await db
@@ -824,8 +857,8 @@ export async function registrarAforo(slug: string, _p: Resultado, fd: FormData) 
         potreroId: v.id(),
         fecha: v.fecha(),
         metodo: z.enum(["cuadro_corte", "regla_altura", "plato", "visual"]),
-        kgMsHa: v.numOpc(),
-        alturaCm: v.numOpc(),
+        kgMsHa: v.numOpc(30_000),
+        alturaCm: v.numOpc(500),
         hojas: z.preprocess(
           (x) => (x === "" || x == null ? undefined : x),
           z.coerce.number({ error: "Número inválido" }).min(0, "No puede ser negativo").max(12, "Máximo 12 hojas").optional(),
@@ -881,7 +914,7 @@ export async function registrarAforo(slug: string, _p: Resultado, fd: FormData) 
 export async function registrarLluvia(slug: string, _p: Resultado, fd: FormData) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "operador");
-    const d = z.object({ fincaId: v.id(), fecha: v.fecha(), mm: v.num(0) }).parse(datos(fd));
+    const d = z.object({ fincaId: v.id(), fecha: v.fecha(), mm: v.num(0, 1000) }).parse(datos(fd));
     await deLaOrg(schema.fincas, d.fincaId, org.id);
     await db
       .insert(schema.lluvias)
@@ -903,6 +936,7 @@ const TIPOS = ["fertilizante", "foliar", "enmienda", "herbicida", "insecticida",
 export async function guardarProducto(slug: string, productoId: string | null, _p: Resultado, fd: FormData) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    if (productoId != null) idValido(productoId);
     if (productoId) await deLaOrg(schema.productos, productoId, org.id);
     const d = z
       .object({
@@ -946,7 +980,7 @@ export async function guardarProducto(slug: string, productoId: string | null, _
       precioUnidad: d.precio?.toString() ?? null,
       notas: d.notas ?? null,
     };
-    if (productoId) await db.update(schema.productos).set(valores).where(eq(schema.productos.id, productoId));
+    if (productoId) await db.update(schema.productos).set(valores).where(and(eq(schema.productos.id, productoId), eq(schema.productos.orgId, org.id)));
     else await db.insert(schema.productos).values({ orgId: org.id, ...valores });
     rev(slug);
     return productoId ? "Producto actualizado" : `Producto "${d.nombre}" agregado`;
@@ -962,7 +996,7 @@ export async function registrarAplicacion(slug: string, _p: Resultado, fd: FormD
         potreroIds: z.array(v.id()).min(1, "Selecciona al menos un potrero"),
         productoId: v.id(),
         fecha: v.fecha(),
-        dosis: v.numPos(),
+        dosis: v.numPos(100_000),
         metodo: z.enum(["voleo", "bomba_espalda", "aguilon", "dron", "fertirriego", "manual"]),
         responsable: v.opcional(80),
         notas: v.opcional(500),
@@ -1042,6 +1076,7 @@ export async function registrarAplicacion(slug: string, _p: Resultado, fd: FormD
 export async function eliminarAplicacion(slug: string, grupoId: string, _p: Resultado) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    idValido(grupoId);
     await db
       .delete(schema.aplicaciones)
       .where(and(eq(schema.aplicaciones.orgId, org.id), eq(schema.aplicaciones.grupoId, grupoId)));
@@ -1120,6 +1155,7 @@ export async function registrarAnalisis(slug: string, _p: Resultado, fd: FormDat
 export async function eliminarAnalisis(slug: string, id: string, _p: Resultado) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    idValido(id);
     await db.delete(schema.analisisSuelo).where(and(eq(schema.analisisSuelo.id, id), eq(schema.analisisSuelo.orgId, org.id)));
     rev(slug);
     return "Análisis eliminado";
@@ -1134,7 +1170,7 @@ export async function registrarMonitoreo(slug: string, _p: Resultado, fd: FormDa
         potreroId: v.id(),
         fecha: v.fecha(),
         plaga: z.enum(["salivazo_ninfas", "salivazo_adultos", "gusano_medidor", "gusano_soldado", "otra"]),
-        conteo: v.num(0),
+        conteo: v.num(0, 100_000),
         notas: v.opcional(500),
       })
       .parse(datos(fd));
@@ -1159,6 +1195,7 @@ export async function registrarMonitoreo(slug: string, _p: Resultado, fd: FormDa
 export async function eliminarMonitoreo(slug: string, id: string, _p: Resultado) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    idValido(id);
     await db.delete(schema.monitoreosPlaga).where(and(eq(schema.monitoreosPlaga.id, id), eq(schema.monitoreosPlaga.orgId, org.id)));
     rev(slug);
     return "Monitoreo eliminado";
@@ -1177,7 +1214,7 @@ export async function registrarLeche(slug: string, _p: Resultado, fd: FormData) 
         hasta: v.fecha(),
         litros: v.numPos(),
         vacas: v.enteroOpc(1, 100000),
-        precio: v.numOpc(),
+        precio: v.numOpc(1_000_000),
         notas: v.opcional(500),
       })
       .parse(datos(fd));
@@ -1218,6 +1255,7 @@ export async function registrarLeche(slug: string, _p: Resultado, fd: FormData) 
 export async function eliminarLeche(slug: string, id: string, _p: Resultado) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    idValido(id);
     await db.delete(schema.produccionLeche).where(and(eq(schema.produccionLeche.id, id), eq(schema.produccionLeche.orgId, org.id)));
     rev(slug);
     return "Registro eliminado";
@@ -1272,6 +1310,7 @@ export async function registrarPesaje(slug: string, _p: Resultado, fd: FormData)
 export async function eliminarPesaje(slug: string, id: string, _p: Resultado) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    idValido(id);
     await db.delete(schema.pesajes).where(and(eq(schema.pesajes.id, id), eq(schema.pesajes.orgId, org.id)));
     rev(slug);
     return "Pesaje eliminado";
@@ -1293,10 +1332,12 @@ export async function subirArchivo(slug: string, _p: Resultado, fd: FormData) {
       .parse(fd.get("potreroId"));
     if (potreroId) await deLaOrg(schema.potreros, potreroId, org.id);
 
-    const nombre = file.name.replace(/[^\w.\- ]+/g, "_").slice(0, 120) || "archivo";
+    const nombre = file.name.replace(/[^\w.\- ]+/g, "_").replace(/^\.+/, "").slice(0, 120) || "archivo";
     const key = `orgs/${org.id}/${crypto.randomUUID()}-${nombre}`;
-    const contentType = file.type || "application/octet-stream";
-    await subirObjeto(key, new Uint8Array(await file.arrayBuffer()), contentType);
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    // El tipo que declara el navegador no se cree: se comprueba la firma del contenido
+    const contentType = tipoContenidoSeguro(file.type || "", bytes);
+    await subirObjeto(key, bytes, contentType);
     await db.insert(schema.archivos).values({ orgId: org.id, potreroId, key, nombre, contentType, tamano: file.size, subidoPor: user.id });
     rev(slug);
     return `"${nombre}" subido`;
@@ -1328,6 +1369,7 @@ export async function agregarMiembro(slug: string, _p: Resultado, fd: FormData) 
       throw new ErrorUsuario("Solo el propietario puede cambiar el rol de un administrador.");
     }
     if (rows[0].id === user.id) throw new ErrorUsuario("No puedes cambiar tu propio rol.");
+    if (!actual) await verificarLimite(org, "miembros");
     await db
       .insert(schema.membresias)
       .values({ orgId: org.id, userId: rows[0].id, email: d.email, rol: d.rol })
@@ -1337,9 +1379,65 @@ export async function agregarMiembro(slug: string, _p: Resultado, fd: FormData) 
   });
 }
 
+/** Quita a una persona del equipo. Mismas reglas que al cambiar roles. */
+export async function quitarMiembro(slug: string, membresiaId: string, _p: Resultado) {
+  return ejecutar(async () => {
+    const { org, user, rol: miRol } = await requireOrg(slug, "administrador", { permitirSinSuscripcion: true });
+    idValido(membresiaId);
+    const [m] = await db
+      .select({ userId: schema.membresias.userId, rol: schema.membresias.rol, email: schema.membresias.email })
+      .from(schema.membresias)
+      .where(and(eq(schema.membresias.id, membresiaId), eq(schema.membresias.orgId, org.id)));
+    if (!m) throw new ErrorUsuario("Esa persona ya no está en el equipo.");
+    if (m.userId === user.id) throw new ErrorUsuario("Para salir de la ganadería usa «Salir de esta ganadería».");
+    if (m.rol === "propietario") throw new ErrorUsuario("No se puede quitar al propietario.");
+    if (m.rol === "administrador" && !puede(miRol, "propietario")) throw new ErrorUsuario("Solo el propietario puede quitar a un administrador.");
+    await db.delete(schema.membresias).where(and(eq(schema.membresias.id, membresiaId), eq(schema.membresias.orgId, org.id)));
+    rev(slug);
+    return `${m.email} ya no tiene acceso`;
+  });
+}
+
+/** El usuario deja de tener acceso a la ganadería (el propietario no puede: la elimina). */
+export async function salirDeGanaderia(slug: string, _p: Resultado) {
+  const r = await ejecutar(async () => {
+    const { org, user, rol } = await requireOrg(slug, "lector");
+    if (rol === "propietario") throw new ErrorUsuario("El propietario no puede salir. Si ya no la usarán, elimina la ganadería.");
+    await db.delete(schema.membresias).where(and(eq(schema.membresias.orgId, org.id), eq(schema.membresias.userId, user.id)));
+  });
+  if (r?.ok) redirect("/app");
+  return r;
+}
+
+/**
+ * Elimina la ganadería y TODOS sus datos (fincas, potreros, registros, archivos). Irreversible.
+ * Solo el propietario, escribiendo el nombre exacto como confirmación. Se permite aunque la suscripción esté vencida.
+ */
+export async function eliminarOrganizacion(slug: string, _p: Resultado, fd: FormData) {
+  const r = await ejecutar(async () => {
+    const { org } = await requireOrg(slug, "propietario", { permitirSinSuscripcion: true });
+    const confirmacion = String(fd.get("confirmacion") ?? "").trim();
+    if (confirmacion !== org.nombre.trim()) {
+      throw new ErrorUsuario("Escribe el nombre exacto de la ganadería para confirmar.");
+    }
+    const archivos = await db.select({ key: schema.archivos.key }).from(schema.archivos).where(eq(schema.archivos.orgId, org.id));
+    await db.transaction(async (tx) => {
+      // aplicaciones → productos es RESTRICT: se borran primero para que la cascada de la organización no falle
+      await tx.delete(schema.aplicaciones).where(eq(schema.aplicaciones.orgId, org.id));
+      await tx.delete(schema.organizaciones).where(eq(schema.organizaciones.id, org.id));
+    });
+    // Los archivos ya no están referenciados: se borran del almacenamiento (un fallo no revierte la eliminación)
+    const fallos = (await Promise.allSettled(archivos.map((a) => borrarObjeto(a.key)))).filter((x) => x.status === "rejected");
+    if (fallos.length) console.error(`eliminarOrganizacion: ${fallos.length} archivos sin borrar en orgs/${org.id}/`);
+  });
+  if (r?.ok) redirect("/app");
+  return r;
+}
+
 export async function actualizarFinca(slug: string, fincaId: string, _p: Resultado, fd: FormData) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    idValido(fincaId);
     await deLaOrg(schema.fincas, fincaId, org.id);
     const d = z
       .object({
@@ -1416,6 +1514,7 @@ export async function registrarEvento(slug: string, _p: Resultado, fd: FormData)
 export async function completarEvento(slug: string, grupoId: string, _p: Resultado) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "operador");
+    idValido(grupoId);
     const hoy = hoyCR();
     await db
       .update(schema.eventos)
@@ -1429,6 +1528,7 @@ export async function completarEvento(slug: string, grupoId: string, _p: Resulta
 export async function eliminarEvento(slug: string, grupoId: string, _p: Resultado) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "administrador");
+    idValido(grupoId);
     await db.delete(schema.eventos).where(and(eq(schema.eventos.orgId, org.id), eq(schema.eventos.grupoId, grupoId)));
     rev(slug);
     return "Labor eliminada";
@@ -1438,6 +1538,7 @@ export async function eliminarEvento(slug: string, grupoId: string, _p: Resultad
 // ───────────── Planificador de pastoreo ─────────────
 
 async function loteDeOrg(loteId: string, orgId: string) {
+  idValido(loteId);
   const [l] = await db
     .select()
     .from(schema.lotes)
@@ -1450,6 +1551,7 @@ async function loteDeOrg(loteId: string, orgId: string) {
 export async function generarPlanLote(slug: string, loteId: string, _p: Resultado, fd: FormData) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "operador");
+    idValido(loteId);
     const lote = await loteDeOrg(loteId, org.id);
     const d = z.object({ metodo: z.enum(["forraje", "ocupacion", "descanso"]), horizonte: v.entero(3, 120) }).parse(datos(fd));
     const [{ potreros, climas }, retirosLeche] = await Promise.all([
@@ -1470,6 +1572,7 @@ export async function generarPlanLote(slug: string, loteId: string, _p: Resultad
 export async function agregarAlPlan(slug: string, loteId: string, _p: Resultado, fd: FormData) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "operador");
+    idValido(loteId);
     await loteDeOrg(loteId, org.id);
     const d = z.object({ potreroId: v.id(), dias: v.entero(1, 60) }).parse(datos(fd));
     await deLaOrg(schema.potreros, d.potreroId, org.id);
@@ -1487,6 +1590,7 @@ export async function agregarAlPlan(slug: string, loteId: string, _p: Resultado,
 export async function ajustarPlan(slug: string, itemId: string, _p: Resultado, fd: FormData) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "operador");
+    idValido(itemId);
     const [item] = await db
       .select()
       .from(schema.planPastoreo)
@@ -1499,10 +1603,10 @@ export async function ajustarPlan(slug: string, itemId: string, _p: Resultado, f
       })
       .parse(datos(fd));
     if (d.accion === "quitar") {
-      await db.delete(schema.planPastoreo).where(eq(schema.planPastoreo.id, itemId));
+      await db.delete(schema.planPastoreo).where(and(eq(schema.planPastoreo.id, itemId), eq(schema.planPastoreo.orgId, org.id)));
     } else if (d.accion === "dias") {
       if (d.dias == null) throw new ErrorUsuario("Indica los días.");
-      await db.update(schema.planPastoreo).set({ dias: d.dias }).where(eq(schema.planPastoreo.id, itemId));
+      await db.update(schema.planPastoreo).set({ dias: d.dias }).where(and(eq(schema.planPastoreo.id, itemId), eq(schema.planPastoreo.orgId, org.id)));
     } else {
       const todos = await db
         .select({ id: schema.planPastoreo.id })
@@ -1528,6 +1632,7 @@ export async function ajustarPlan(slug: string, itemId: string, _p: Resultado, f
 export async function borrarPlan(slug: string, loteId: string, _p: Resultado) {
   return ejecutar(async () => {
     const { org } = await requireOrg(slug, "operador");
+    idValido(loteId);
     await db.delete(schema.planPastoreo).where(and(eq(schema.planPastoreo.orgId, org.id), eq(schema.planPastoreo.loteId, loteId)));
     rev(slug);
     return "Plan borrado";

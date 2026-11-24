@@ -4,6 +4,7 @@ import { ArrowRight, CalendarClock, CloudRain, Map, Repeat2, Sprout, Users } fro
 import { getUsuario } from "@/lib/tenant";
 import { Logo } from "@/components/logo";
 import { PaisajeParcelas } from "@/components/auth-form";
+import { PieLegal } from "@/components/legal";
 
 async function Acciones() {
   const user = await getUsuario();
@@ -76,7 +77,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="mx-auto max-w-6xl px-4 py-8 text-sm text-muted sm:px-6">© Repastos · Costa Rica</footer>
+      <PieLegal />
     </div>
   );
 }

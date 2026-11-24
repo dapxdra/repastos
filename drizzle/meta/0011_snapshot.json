@@ -1,0 +1,2854 @@
+{
+  "id": "0f0ed8a9-e5a7-406c-b4a5-41b0ec75ce92",
+  "prevId": "66bdc754-0ff0-4e00-9559-421e4b67bce6",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.aforos": {
+      "name": "aforos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "potrero_id": {
+          "name": "potrero_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "metodo": {
+          "name": "metodo",
+          "type": "metodo_aforo",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'cuadro_corte'"
+        },
+        "kg_ms_ha": {
+          "name": "kg_ms_ha",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "altura_cm": {
+          "name": "altura_cm",
+          "type": "numeric(6, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hojas": {
+          "name": "hojas",
+          "type": "numeric(3, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "aforos_org_idx": {
+          "name": "aforos_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "aforos_potrero_idx": {
+          "name": "aforos_potrero_idx",
+          "columns": [
+            {
+              "expression": "potrero_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "aforos_org_id_organizaciones_id_fk": {
+          "name": "aforos_org_id_organizaciones_id_fk",
+          "tableFrom": "aforos",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "aforos_potrero_id_potreros_id_fk": {
+          "name": "aforos_potrero_id_potreros_id_fk",
+          "tableFrom": "aforos",
+          "tableTo": "potreros",
+          "columnsFrom": [
+            "potrero_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.analisis_suelo": {
+      "name": "analisis_suelo",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "finca_id": {
+          "name": "finca_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "potrero_ids": {
+          "name": "potrero_ids",
+          "type": "uuid[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::uuid[]"
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "laboratorio": {
+          "name": "laboratorio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ph": {
+          "name": "ph",
+          "type": "numeric(4, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "acidez": {
+          "name": "acidez",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ca": {
+          "name": "ca",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mg": {
+          "name": "mg",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "k": {
+          "name": "k",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "p": {
+          "name": "p",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "zn": {
+          "name": "zn",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cu": {
+          "name": "cu",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fe": {
+          "name": "fe",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mn": {
+          "name": "mn",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mo": {
+          "name": "mo",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notas": {
+          "name": "notas",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_por": {
+          "name": "creado_por",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "analisis_suelo_org_idx": {
+          "name": "analisis_suelo_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "analisis_suelo_org_id_organizaciones_id_fk": {
+          "name": "analisis_suelo_org_id_organizaciones_id_fk",
+          "tableFrom": "analisis_suelo",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "analisis_suelo_finca_id_fincas_id_fk": {
+          "name": "analisis_suelo_finca_id_fincas_id_fk",
+          "tableFrom": "analisis_suelo",
+          "tableTo": "fincas",
+          "columnsFrom": [
+            "finca_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.aplicaciones": {
+      "name": "aplicaciones",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "grupo_id": {
+          "name": "grupo_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "potrero_id": {
+          "name": "potrero_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "producto_id": {
+          "name": "producto_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "dosis_por_ha": {
+          "name": "dosis_por_ha",
+          "type": "numeric(14, 6)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cantidad_total": {
+          "name": "cantidad_total",
+          "type": "numeric(12, 3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metodo": {
+          "name": "metodo",
+          "type": "metodo_aplicacion",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'voleo'"
+        },
+        "costo_total": {
+          "name": "costo_total",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reingreso_dias": {
+          "name": "reingreso_dias",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "fecha_liberacion": {
+          "name": "fecha_liberacion",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "responsable": {
+          "name": "responsable",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notas": {
+          "name": "notas",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_por": {
+          "name": "creado_por",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "aplicaciones_org_idx": {
+          "name": "aplicaciones_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "aplicaciones_potrero_idx": {
+          "name": "aplicaciones_potrero_idx",
+          "columns": [
+            {
+              "expression": "potrero_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "aplicaciones_liberacion_idx": {
+          "name": "aplicaciones_liberacion_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "fecha_liberacion",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "aplicaciones_org_id_organizaciones_id_fk": {
+          "name": "aplicaciones_org_id_organizaciones_id_fk",
+          "tableFrom": "aplicaciones",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "aplicaciones_potrero_id_potreros_id_fk": {
+          "name": "aplicaciones_potrero_id_potreros_id_fk",
+          "tableFrom": "aplicaciones",
+          "tableTo": "potreros",
+          "columnsFrom": [
+            "potrero_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "aplicaciones_producto_id_productos_id_fk": {
+          "name": "aplicaciones_producto_id_productos_id_fk",
+          "tableFrom": "aplicaciones",
+          "tableTo": "productos",
+          "columnsFrom": [
+            "producto_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.archivos": {
+      "name": "archivos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "potrero_id": {
+          "name": "potrero_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tamano": {
+          "name": "tamano",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subido_por": {
+          "name": "subido_por",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "archivos_org_idx": {
+          "name": "archivos_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "archivos_org_id_organizaciones_id_fk": {
+          "name": "archivos_org_id_organizaciones_id_fk",
+          "tableFrom": "archivos",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "archivos_potrero_id_potreros_id_fk": {
+          "name": "archivos_potrero_id_potreros_id_fk",
+          "tableFrom": "archivos",
+          "tableTo": "potreros",
+          "columnsFrom": [
+            "potrero_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "archivos_key_unique": {
+          "name": "archivos_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.eventos": {
+      "name": "eventos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "grupo_id": {
+          "name": "grupo_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "potrero_id": {
+          "name": "potrero_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_evento",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "titulo": {
+          "name": "titulo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cantidad": {
+          "name": "cantidad",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unidad": {
+          "name": "unidad",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "costo": {
+          "name": "costo",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hecha": {
+          "name": "hecha",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "responsable": {
+          "name": "responsable",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notas": {
+          "name": "notas",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_por": {
+          "name": "creado_por",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "eventos_org_idx": {
+          "name": "eventos_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "eventos_potrero_idx": {
+          "name": "eventos_potrero_idx",
+          "columns": [
+            {
+              "expression": "potrero_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "eventos_org_id_organizaciones_id_fk": {
+          "name": "eventos_org_id_organizaciones_id_fk",
+          "tableFrom": "eventos",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "eventos_potrero_id_potreros_id_fk": {
+          "name": "eventos_potrero_id_potreros_id_fk",
+          "tableFrom": "eventos",
+          "tableTo": "potreros",
+          "columnsFrom": [
+            "potrero_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.fincas": {
+      "name": "fincas",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ubicacion": {
+          "name": "ubicacion",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "provincia": {
+          "name": "provincia",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "canton": {
+          "name": "canton",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "area_ha": {
+          "name": "area_ha",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "altitud_msnm": {
+          "name": "altitud_msnm",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "regimen_lluvia": {
+          "name": "regimen_lluvia",
+          "type": "regimen_lluvia",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "centro": {
+          "name": "centro",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "fincas_org_idx": {
+          "name": "fincas_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "fincas_org_id_organizaciones_id_fk": {
+          "name": "fincas_org_id_organizaciones_id_fk",
+          "tableFrom": "fincas",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.lluvias": {
+      "name": "lluvias",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "finca_id": {
+          "name": "finca_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "mm": {
+          "name": "mm",
+          "type": "numeric(6, 1)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "lluvias_org_idx": {
+          "name": "lluvias_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "lluvias_finca_fecha_uq": {
+          "name": "lluvias_finca_fecha_uq",
+          "columns": [
+            {
+              "expression": "finca_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "fecha",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "lluvias_org_id_organizaciones_id_fk": {
+          "name": "lluvias_org_id_organizaciones_id_fk",
+          "tableFrom": "lluvias",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "lluvias_finca_id_fincas_id_fk": {
+          "name": "lluvias_finca_id_fincas_id_fk",
+          "tableFrom": "lluvias",
+          "tableTo": "fincas",
+          "columnsFrom": [
+            "finca_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.lotes": {
+      "name": "lotes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "finca_id": {
+          "name": "finca_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "modulo_id": {
+          "name": "modulo_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "categoria": {
+          "name": "categoria",
+          "type": "categoria_lote",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'mixto'"
+        },
+        "cabezas": {
+          "name": "cabezas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "peso_promedio_kg": {
+          "name": "peso_promedio_kg",
+          "type": "numeric(8, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "suplemento_kg_ms": {
+          "name": "suplemento_kg_ms",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "consumo_pct_pv": {
+          "name": "consumo_pct_pv",
+          "type": "numeric(4, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "lotes_org_idx": {
+          "name": "lotes_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "lotes_org_id_organizaciones_id_fk": {
+          "name": "lotes_org_id_organizaciones_id_fk",
+          "tableFrom": "lotes",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "lotes_finca_id_fincas_id_fk": {
+          "name": "lotes_finca_id_fincas_id_fk",
+          "tableFrom": "lotes",
+          "tableTo": "fincas",
+          "columnsFrom": [
+            "finca_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "lotes_modulo_id_modulos_id_fk": {
+          "name": "lotes_modulo_id_modulos_id_fk",
+          "tableFrom": "lotes",
+          "tableTo": "modulos",
+          "columnsFrom": [
+            "modulo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.membresias": {
+      "name": "membresias",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rol": {
+          "name": "rol",
+          "type": "rol",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'lector'"
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "membresias_org_user_uq": {
+          "name": "membresias_org_user_uq",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "membresias_user_idx": {
+          "name": "membresias_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "membresias_org_id_organizaciones_id_fk": {
+          "name": "membresias_org_id_organizaciones_id_fk",
+          "tableFrom": "membresias",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.modulos": {
+      "name": "modulos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "color": {
+          "name": "color",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "orden": {
+          "name": "orden",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "modulos_org_idx": {
+          "name": "modulos_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "modulos_org_nombre_uq": {
+          "name": "modulos_org_nombre_uq",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "nombre",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "modulos_org_id_organizaciones_id_fk": {
+          "name": "modulos_org_id_organizaciones_id_fk",
+          "tableFrom": "modulos",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.monitoreos_plaga": {
+      "name": "monitoreos_plaga",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "potrero_id": {
+          "name": "potrero_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "plaga": {
+          "name": "plaga",
+          "type": "plaga",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "conteo": {
+          "name": "conteo",
+          "type": "numeric(8, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notas": {
+          "name": "notas",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_por": {
+          "name": "creado_por",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "monitoreos_plaga_org_idx": {
+          "name": "monitoreos_plaga_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "monitoreos_plaga_potrero_idx": {
+          "name": "monitoreos_plaga_potrero_idx",
+          "columns": [
+            {
+              "expression": "potrero_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "monitoreos_plaga_org_id_organizaciones_id_fk": {
+          "name": "monitoreos_plaga_org_id_organizaciones_id_fk",
+          "tableFrom": "monitoreos_plaga",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "monitoreos_plaga_potrero_id_potreros_id_fk": {
+          "name": "monitoreos_plaga_potrero_id_potreros_id_fk",
+          "tableFrom": "monitoreos_plaga",
+          "tableTo": "potreros",
+          "columnsFrom": [
+            "potrero_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.organizaciones": {
+      "name": "organizaciones",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo_produccion": {
+          "name": "tipo_produccion",
+          "type": "tipo_produccion",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'doble_proposito'"
+        },
+        "unidad_area": {
+          "name": "unidad_area",
+          "type": "unidad_area",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ha'"
+        },
+        "plan": {
+          "name": "plan",
+          "type": "plan",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'prueba'"
+        },
+        "estado_suscripcion": {
+          "name": "estado_suscripcion",
+          "type": "estado_suscripcion",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'prueba'"
+        },
+        "prueba_hasta": {
+          "name": "prueba_hasta",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "(current_date + 30)"
+        },
+        "suscripcion_vence": {
+          "name": "suscripcion_vence",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pago_cliente_id": {
+          "name": "pago_cliente_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pago_suscripcion_id": {
+          "name": "pago_suscripcion_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "terminos_version": {
+          "name": "terminos_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "terminos_aceptados_en": {
+          "name": "terminos_aceptados_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "terminos_aceptados_por": {
+          "name": "terminos_aceptados_por",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "organizaciones_slug_unique": {
+          "name": "organizaciones_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pastoreos": {
+      "name": "pastoreos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "potrero_id": {
+          "name": "potrero_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lote_id": {
+          "name": "lote_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cabezas": {
+          "name": "cabezas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fecha_entrada": {
+          "name": "fecha_entrada",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "fecha_salida": {
+          "name": "fecha_salida",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estado_salida": {
+          "name": "estado_salida",
+          "type": "estado_salida",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "altura_salida_cm": {
+          "name": "altura_salida_cm",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notas": {
+          "name": "notas",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "pastoreos_org_idx": {
+          "name": "pastoreos_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pastoreos_potrero_idx": {
+          "name": "pastoreos_potrero_idx",
+          "columns": [
+            {
+              "expression": "potrero_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pastoreos_org_id_organizaciones_id_fk": {
+          "name": "pastoreos_org_id_organizaciones_id_fk",
+          "tableFrom": "pastoreos",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pastoreos_potrero_id_potreros_id_fk": {
+          "name": "pastoreos_potrero_id_potreros_id_fk",
+          "tableFrom": "pastoreos",
+          "tableTo": "potreros",
+          "columnsFrom": [
+            "potrero_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pastoreos_lote_id_lotes_id_fk": {
+          "name": "pastoreos_lote_id_lotes_id_fk",
+          "tableFrom": "pastoreos",
+          "tableTo": "lotes",
+          "columnsFrom": [
+            "lote_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pesajes": {
+      "name": "pesajes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lote_id": {
+          "name": "lote_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cabezas": {
+          "name": "cabezas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "peso_promedio_kg": {
+          "name": "peso_promedio_kg",
+          "type": "numeric(8, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notas": {
+          "name": "notas",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_por": {
+          "name": "creado_por",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "pesajes_org_idx": {
+          "name": "pesajes_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pesajes_lote_idx": {
+          "name": "pesajes_lote_idx",
+          "columns": [
+            {
+              "expression": "lote_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pesajes_org_id_organizaciones_id_fk": {
+          "name": "pesajes_org_id_organizaciones_id_fk",
+          "tableFrom": "pesajes",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pesajes_lote_id_lotes_id_fk": {
+          "name": "pesajes_lote_id_lotes_id_fk",
+          "tableFrom": "pesajes",
+          "tableTo": "lotes",
+          "columnsFrom": [
+            "lote_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.plan_pastoreo": {
+      "name": "plan_pastoreo",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lote_id": {
+          "name": "lote_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "potrero_id": {
+          "name": "potrero_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "orden": {
+          "name": "orden",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dias": {
+          "name": "dias",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "plan_org_idx": {
+          "name": "plan_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "plan_lote_idx": {
+          "name": "plan_lote_idx",
+          "columns": [
+            {
+              "expression": "lote_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "plan_pastoreo_org_id_organizaciones_id_fk": {
+          "name": "plan_pastoreo_org_id_organizaciones_id_fk",
+          "tableFrom": "plan_pastoreo",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "plan_pastoreo_lote_id_lotes_id_fk": {
+          "name": "plan_pastoreo_lote_id_lotes_id_fk",
+          "tableFrom": "plan_pastoreo",
+          "tableTo": "lotes",
+          "columnsFrom": [
+            "lote_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "plan_pastoreo_potrero_id_potreros_id_fk": {
+          "name": "plan_pastoreo_potrero_id_potreros_id_fk",
+          "tableFrom": "plan_pastoreo",
+          "tableTo": "potreros",
+          "columnsFrom": [
+            "potrero_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.potreros": {
+      "name": "potreros",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "finca_id": {
+          "name": "finca_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "modulo_id": {
+          "name": "modulo_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "area_ha": {
+          "name": "area_ha",
+          "type": "numeric(14, 6)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "area_excluida_ha": {
+          "name": "area_excluida_ha",
+          "type": "numeric(14, 6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "descuento_ha": {
+          "name": "descuento_ha",
+          "type": "numeric(14, 6)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "tipo_pasto": {
+          "name": "tipo_pasto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "altitud_msnm": {
+          "name": "altitud_msnm",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dias_descanso_objetivo": {
+          "name": "dias_descanso_objetivo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 30
+        },
+        "dias_ocupacion_objetivo": {
+          "name": "dias_ocupacion_objetivo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "geometria": {
+          "name": "geometria",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notas": {
+          "name": "notas",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "potreros_org_idx": {
+          "name": "potreros_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "potreros_finca_idx": {
+          "name": "potreros_finca_idx",
+          "columns": [
+            {
+              "expression": "finca_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "potreros_modulo_idx": {
+          "name": "potreros_modulo_idx",
+          "columns": [
+            {
+              "expression": "modulo_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "potreros_org_id_organizaciones_id_fk": {
+          "name": "potreros_org_id_organizaciones_id_fk",
+          "tableFrom": "potreros",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "potreros_finca_id_fincas_id_fk": {
+          "name": "potreros_finca_id_fincas_id_fk",
+          "tableFrom": "potreros",
+          "tableTo": "fincas",
+          "columnsFrom": [
+            "finca_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "potreros_modulo_id_modulos_id_fk": {
+          "name": "potreros_modulo_id_modulos_id_fk",
+          "tableFrom": "potreros",
+          "tableTo": "modulos",
+          "columnsFrom": [
+            "modulo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.produccion_leche": {
+      "name": "produccion_leche",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lote_id": {
+          "name": "lote_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "desde": {
+          "name": "desde",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hasta": {
+          "name": "hasta",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "litros": {
+          "name": "litros",
+          "type": "numeric(12, 1)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vacas": {
+          "name": "vacas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "precio_litro": {
+          "name": "precio_litro",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notas": {
+          "name": "notas",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_por": {
+          "name": "creado_por",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "produccion_leche_org_idx": {
+          "name": "produccion_leche_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "produccion_leche_org_id_organizaciones_id_fk": {
+          "name": "produccion_leche_org_id_organizaciones_id_fk",
+          "tableFrom": "produccion_leche",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "produccion_leche_lote_id_lotes_id_fk": {
+          "name": "produccion_leche_lote_id_lotes_id_fk",
+          "tableFrom": "produccion_leche",
+          "tableTo": "lotes",
+          "columnsFrom": [
+            "lote_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.productos": {
+      "name": "productos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_producto",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingrediente_activo": {
+          "name": "ingrediente_activo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "registro": {
+          "name": "registro",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unidad": {
+          "name": "unidad",
+          "type": "unidad_producto",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'kg'"
+        },
+        "n": {
+          "name": "n",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "p": {
+          "name": "p",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "k": {
+          "name": "k",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cao": {
+          "name": "cao",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mgo": {
+          "name": "mgo",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "s": {
+          "name": "s",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "b": {
+          "name": "b",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "zn": {
+          "name": "zn",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "periodo_reingreso_dias": {
+          "name": "periodo_reingreso_dias",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "retiro_leche_dias": {
+          "name": "retiro_leche_dias",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "retiro_carne_dias": {
+          "name": "retiro_carne_dias",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "precio_unidad": {
+          "name": "precio_unidad",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notas": {
+          "name": "notas",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "productos_org_idx": {
+          "name": "productos_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "productos_org_id_organizaciones_id_fk": {
+          "name": "productos_org_id_organizaciones_id_fk",
+          "tableFrom": "productos",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.zonas": {
+      "name": "zonas",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "org_id": {
+          "name": "org_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "finca_id": {
+          "name": "finca_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_zona",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'otro'"
+        },
+        "geometria": {
+          "name": "geometria",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "area_ha": {
+          "name": "area_ha",
+          "type": "numeric(14, 6)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "eje": {
+          "name": "eje",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ancho_m": {
+          "name": "ancho_m",
+          "type": "numeric(8, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "zonas_org_idx": {
+          "name": "zonas_org_idx",
+          "columns": [
+            {
+              "expression": "org_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "zonas_finca_idx": {
+          "name": "zonas_finca_idx",
+          "columns": [
+            {
+              "expression": "finca_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "zonas_org_id_organizaciones_id_fk": {
+          "name": "zonas_org_id_organizaciones_id_fk",
+          "tableFrom": "zonas",
+          "tableTo": "organizaciones",
+          "columnsFrom": [
+            "org_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "zonas_finca_id_fincas_id_fk": {
+          "name": "zonas_finca_id_fincas_id_fk",
+          "tableFrom": "zonas",
+          "tableTo": "fincas",
+          "columnsFrom": [
+            "finca_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.categoria_lote": {
+      "name": "categoria_lote",
+      "schema": "public",
+      "values": [
+        "vacas_produccion",
+        "vacas_secas",
+        "novillas",
+        "terneros",
+        "toros",
+        "novillos_engorde",
+        "vacas_cria",
+        "mixto"
+      ]
+    },
+    "public.estado_salida": {
+      "name": "estado_salida",
+      "schema": "public",
+      "values": [
+        "alto",
+        "bien",
+        "pelado"
+      ]
+    },
+    "public.estado_suscripcion": {
+      "name": "estado_suscripcion",
+      "schema": "public",
+      "values": [
+        "prueba",
+        "activa",
+        "morosa",
+        "vencida",
+        "cancelada"
+      ]
+    },
+    "public.metodo_aforo": {
+      "name": "metodo_aforo",
+      "schema": "public",
+      "values": [
+        "cuadro_corte",
+        "regla_altura",
+        "plato",
+        "visual"
+      ]
+    },
+    "public.metodo_aplicacion": {
+      "name": "metodo_aplicacion",
+      "schema": "public",
+      "values": [
+        "voleo",
+        "bomba_espalda",
+        "aguilon",
+        "dron",
+        "fertirriego",
+        "manual"
+      ]
+    },
+    "public.plaga": {
+      "name": "plaga",
+      "schema": "public",
+      "values": [
+        "salivazo_ninfas",
+        "salivazo_adultos",
+        "gusano_medidor",
+        "gusano_soldado",
+        "otra"
+      ]
+    },
+    "public.plan": {
+      "name": "plan",
+      "schema": "public",
+      "values": [
+        "prueba",
+        "basico",
+        "profesional",
+        "empresa"
+      ]
+    },
+    "public.regimen_lluvia": {
+      "name": "regimen_lluvia",
+      "schema": "public",
+      "values": [
+        "pacifico",
+        "intermedio",
+        "caribe"
+      ]
+    },
+    "public.rol": {
+      "name": "rol",
+      "schema": "public",
+      "values": [
+        "propietario",
+        "administrador",
+        "operador",
+        "lector"
+      ]
+    },
+    "public.tipo_evento": {
+      "name": "tipo_evento",
+      "schema": "public",
+      "values": [
+        "siembra",
+        "chapia",
+        "cosecha",
+        "riego",
+        "cercas",
+        "tarea",
+        "nota"
+      ]
+    },
+    "public.tipo_produccion": {
+      "name": "tipo_produccion",
+      "schema": "public",
+      "values": [
+        "leche",
+        "carne",
+        "doble_proposito"
+      ]
+    },
+    "public.tipo_producto": {
+      "name": "tipo_producto",
+      "schema": "public",
+      "values": [
+        "fertilizante",
+        "foliar",
+        "enmienda",
+        "herbicida",
+        "insecticida",
+        "fungicida",
+        "organico",
+        "otro"
+      ]
+    },
+    "public.tipo_zona": {
+      "name": "tipo_zona",
+      "schema": "public",
+      "values": [
+        "bosque",
+        "proteccion",
+        "agua",
+        "camino",
+        "instalaciones",
+        "corte",
+        "otro"
+      ]
+    },
+    "public.unidad_area": {
+      "name": "unidad_area",
+      "schema": "public",
+      "values": [
+        "ha",
+        "mz"
+      ]
+    },
+    "public.unidad_producto": {
+      "name": "unidad_producto",
+      "schema": "public",
+      "values": [
+        "kg",
+        "L"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

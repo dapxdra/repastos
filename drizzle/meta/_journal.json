@@ -78,6 +78,13 @@
       "when": 1795485681923,
       "tag": "0010_produccion",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1795549459489,
+      "tag": "0011_suscripciones",
+      "breakpoints": true
     }
   ]
 }

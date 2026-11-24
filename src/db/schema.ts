@@ -72,12 +72,27 @@ const orgId = () =>
     .notNull()
     .references(() => organizaciones.id, { onDelete: "cascade" });
 
+export const planEnum = pgEnum("plan", ["prueba", "basico", "profesional", "empresa"]);
+export const estadoSuscripcionEnum = pgEnum("estado_suscripcion", ["prueba", "activa", "morosa", "vencida", "cancelada"]);
+
 export const organizaciones = pgTable("organizaciones", {
   id: uuid("id").primaryKey().defaultRandom(),
   nombre: text("nombre").notNull(),
   slug: text("slug").notNull().unique(),
   tipoProduccion: tipoProduccionEnum("tipo_produccion").notNull().default("doble_proposito"),
   unidadArea: unidadAreaEnum("unidad_area").notNull().default("ha"),
+  // Membresía (ver src/lib/planes.ts). La organización es el cliente que paga.
+  plan: planEnum("plan").notNull().default("prueba"),
+  estadoSuscripcion: estadoSuscripcionEnum("estado_suscripcion").notNull().default("prueba"),
+  pruebaHasta: date("prueba_hasta").default(sql`(current_date + 30)`),
+  suscripcionVence: timestamp("suscripcion_vence", { withTimezone: true }),
+  /** Ids del cliente y la suscripción en la pasarela de pago (cuando se conecte). */
+  pagoClienteId: text("pago_cliente_id"),
+  pagoSuscripcionId: text("pago_suscripcion_id"),
+  // Aceptación de los Términos y la Política de Privacidad por quien contrata (propietario)
+  terminosVersion: text("terminos_version"),
+  terminosAceptadosEn: timestamp("terminos_aceptados_en", { withTimezone: true }),
+  terminosAceptadosPor: text("terminos_aceptados_por"),
   ...creadoEn,
 });
 
