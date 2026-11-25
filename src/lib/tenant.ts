@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { and, count, eq } from "drizzle-orm";
 import { redirect, notFound } from "next/navigation";
+import { connection } from "next/server";
 import { auth } from "@/lib/auth/server";
 import { db, schema } from "@/db";
 import type { Rol } from "@/db/schema";
@@ -18,6 +19,9 @@ export function puede(rol: Rol, minimo: Rol) {
 export class ErrorUsuario extends Error {}
 
 export const getUsuario = cache(async () => {
+  // Marca el render como dinámico antes del fetch de sesión: así el prerender (Cache Components)
+  // se detiene aquí en vez de cortar el fetch de Neon Auth a medias.
+  await connection();
   const { data: session } = await auth.getSession();
   return session?.user ?? null;
 });
