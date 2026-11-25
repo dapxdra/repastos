@@ -119,10 +119,10 @@ export function detalleEstado(p: {
 }
 
 export const ESTADOS: Record<EstadoPotrero, { label: string; color: string; descripcion: string }> = {
-  listo: { label: "Listo", color: "#2f8f46", descripcion: "Cumplió su descanso, sin restricciones" },
-  en_descanso: { label: "En descanso", color: "#c9962b", descripcion: "Recuperándose después del pastoreo" },
-  en_espera: { label: "En espera", color: "#c2410c", descripcion: "Bloqueado por tiempo de reingreso de un producto" },
-  ocupado: { label: "Ocupado", color: "#2563a8", descripcion: "Con ganado pastoreando" },
+  listo: { label: "Listo", color: "#2f9a80", descripcion: "Cumplió su descanso, sin restricciones" },
+  en_descanso: { label: "En descanso", color: "#d39a3f", descripcion: "Recuperándose después del pastoreo" },
+  en_espera: { label: "En espera", color: "#8a2f45", descripcion: "Bloqueado por tiempo de reingreso de un producto" },
+  ocupado: { label: "Ocupado", color: "#1f5f86", descripcion: "Con ganado pastoreando" },
 };
 
 // ───────────── Módulos por hato ─────────────

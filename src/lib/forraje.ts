@@ -476,13 +476,13 @@ export function tasaEntreAforos(a: { kg: number; fecha: string }, b: { kg: numbe
 export type Prioridad = "pastorear" | "pronto" | "pasado" | "esperar" | "bloqueado" | "ocupado" | "sin_datos";
 
 export const PRIORIDADES: Record<Prioridad, { label: string; color: string; descripcion: string }> = {
-  pasado: { label: "Pasándose", color: "#b45309", descripcion: "Sobre la entrada ideal: pastorear ya o cortar para ensilaje/pacas" },
-  pastorear: { label: "Pastorear ya", color: "#15803d", descripcion: "Llegó a su cobertura u hojas objetivo" },
-  pronto: { label: "Pronto", color: "#65a30d", descripcion: "Le faltan pocos días" },
-  esperar: { label: "Esperar", color: "#a8a29e", descripcion: "Aún rebrotando" },
-  bloqueado: { label: "En espera", color: "#c2410c", descripcion: "Tiempo de reingreso de un producto" },
-  ocupado: { label: "Ocupado", color: "#2563a8", descripcion: "Con ganado" },
-  sin_datos: { label: "Sin datos", color: "#6b7280", descripcion: "Registra un aforo o un pastoreo" },
+  pasado: { label: "Pasándose", color: "#a8551e", descripcion: "Sobre la entrada ideal: pastorear ya o cortar para ensilaje/pacas" },
+  pastorear: { label: "Pastorear ya", color: "#0f6e4c", descripcion: "Llegó a su cobertura u hojas objetivo" },
+  pronto: { label: "Pronto", color: "#8fa33a", descripcion: "Le faltan pocos días" },
+  esperar: { label: "Esperar", color: "#a9b8b3", descripcion: "Aún rebrotando" },
+  bloqueado: { label: "En espera", color: "#8a2f45", descripcion: "Tiempo de reingreso de un producto" },
+  ocupado: { label: "Ocupado", color: "#1f5f86", descripcion: "Con ganado" },
+  sin_datos: { label: "Sin datos", color: "#8c7f75", descripcion: "Registra un aforo o un pastoreo" },
 };
 
 /** Índice de madurez: 1 = en su punto. Combina cobertura y hojas (lo que llegue primero). */

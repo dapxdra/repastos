@@ -463,7 +463,7 @@ export function MapaPotreros({
       if (cancelado) return;
       marcadoresImport.current = lectura.poligonos.map((p, i) => {
         const el = document.createElement("div");
-        el.className = "pointer-events-none grid size-6 place-items-center rounded-full bg-[#a16207] text-[11px] font-bold text-white shadow ring-2 ring-white";
+        el.className = "pointer-events-none grid size-6 place-items-center rounded-full bg-[#8a5f17] text-[11px] font-bold text-white shadow ring-2 ring-white";
         el.textContent = String(i + 1);
         return new maplibregl.Marker({ element: el }).setLngLat(centroide(p.geometria)).addTo(map);
       });
@@ -825,7 +825,7 @@ export function MapaPotreros({
                 <X className="size-4" aria-hidden />
               </button>
             </div>
-            <span className="chip mb-3" style={{ background: `${ESTADOS[sel.estado].color}22`, color: ESTADOS[sel.estado].color }}>
+            <span className="chip mb-3" style={{ background: `${ESTADOS[sel.estado].color}22`, color: "var(--foreground)" }}>
               <span className="size-1.5 rounded-full" style={{ background: ESTADOS[sel.estado].color }} aria-hidden />
               {ESTADOS[sel.estado].label}
             </span>

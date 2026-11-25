@@ -156,7 +156,7 @@ export default async function Potreros({ params }: PageProps<"/app/[slug]/potrer
                 {usoSuelo.map(({ f, pastoreable, porTipo, descuentos, mapeado, total }) => {
                   const base = Math.max(total ?? 0, mapeado);
                   const filas = [
-                    { k: "pastoreable", label: "Pastoreable", color: "#8cc152", ha: pastoreable },
+                    { k: "pastoreable", label: "Pastoreable", color: "#9db54a", ha: pastoreable },
                     ...porTipo.map((x) => ({ k: x.t, label: TIPOS_ZONA[x.t].label.split(" (")[0], color: TIPOS_ZONA[x.t].color, ha: x.ha })),
                     ...(descuentos > 0 ? [{ k: "descuento", label: "Descontado a mano", color: "#a7a29a", ha: descuentos }] : []),
                     ...(total != null && total - mapeado > 0.05 ? [{ k: "sin", label: "Sin mapear", color: "transparent", ha: total - mapeado }] : []),

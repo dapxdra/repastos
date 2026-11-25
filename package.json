@@ -14,7 +14,8 @@
     "db:demo": "node --no-warnings --env-file=.env.local scripts/seed-demo.mjs",
     "predev": "node scripts/copiar-worker-mapa.mjs",
     "prebuild": "node scripts/verificar-auth.mjs && node scripts/copiar-worker-mapa.mjs",
-    "check:auth": "node scripts/verificar-auth.mjs"
+    "check:auth": "node scripts/verificar-auth.mjs",
+    "marca": "node scripts/generar-marca.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1175.0",

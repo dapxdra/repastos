@@ -8,5 +8,5 @@ export default auth.middleware({
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|maplibre/|sw.js|manifest.webmanifest|icon.svg|icono-maskable.svg).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|maplibre/|sw.js|manifest.webmanifest|icon.svg|apple-icon.png|opengraph-image|icono-|marca/).*)"],
 };

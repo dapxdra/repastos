@@ -2,59 +2,67 @@
 
 /*
  * Sistema de diseño Repastos — "Organic Biophilic + Flat" (ui-ux-pro-max, perfil Agriculture/Farm Tech)
- * Verde potrero + dorado de cosecha + azul cielo. Superficies planas, radios suaves, sombras naturales mínimas.
+ * Paleta de marca: bosque #074f37, crema #f3ecdc, café #311e18, azul #033a58, salvia #b5ccc6, oliva #77864b;
+ * acentos mostaza #dda54e, lima #cce087, turquesa #77cab8, vino #5d2030. Ver public/marca/.
  */
 /* Tema claro por defecto; el oscuro se activa con data-theme="dark" (selector Apariencia, ver components/tema.tsx) */
 :root {
   color-scheme: light;
-  --background: #f7f9f5;
-  --surface: #ffffff;
-  --surface-2: #f0f4ee;
-  --foreground: #1d2b22;
-  --muted: #5d6b61;
-  --border: #e2e8df;
-  --primary: #1f7a3a;
-  --primary-strong: #176330;
-  --on-primary: #ffffff;
-  --primary-soft: #e7f4e9;
-  --accent: #a16207;
-  --accent-soft: #fdf5e3;
-  --sky: #2563a8;
-  --sky-soft: #e9f1fb;
-  --warning: #c2410c;
-  --warning-soft: #fef0e6;
-  --danger: #b91c1c;
-  --danger-soft: #fdecec;
-  --ring: #1f7a3a;
-  --shadow: 0 1px 2px rgb(29 43 34 / 0.04), 0 4px 14px rgb(29 43 34 / 0.035);
-  --paisaje-fondo: #e3f1e0;
+  --background: #f3ecdc; /* crema */
+  --surface: #fbf7ee;
+  --surface-2: #efe6d2;
+  --foreground: #311e18; /* café */
+  --muted: #6b5d52;
+  --border: #e3d9c3;
+  --primary: #074f37; /* bosque */
+  --primary-strong: #053a29;
+  --on-primary: #f3ecdc;
+  --primary-soft: #e1e9d9;
+  --accent: #8a5f17; /* mostaza, oscurecida para texto */
+  --accent-soft: #f6e3c3;
+  --sky: #033a58; /* azul */
+  --sky-soft: #dde8ec;
+  --warning: #a14d16;
+  --warning-soft: #f7e2cc;
+  --danger: #7a2a3d; /* vino */
+  --danger-soft: #f1dfe2;
+  --ring: #074f37;
+  --shadow: 0 1px 2px rgb(49 30 24 / 0.05), 0 4px 14px rgb(49 30 24 / 0.04);
+  --paisaje-fondo: #e9e1cc;
   --paisaje-opacidad: 0.95;
+  /* Isotipo sin baldosa (estados de la rotación) */
+  --marca-pasto: #dda54e;
+  --marca-recup: #77864b;
+  --marca-listo: #074f37;
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --background: #0e1410;
-  --surface: #151d17;
-  --surface-2: #1c261e;
-  --foreground: #e6ece3;
-  --muted: #9aa99b;
-  --border: #273329;
-  --primary: #4fb36b;
-  --primary-strong: #6cc786;
-  --on-primary: #08130b;
-  --primary-soft: #18301f;
-  --accent: #e3ad3b;
-  --accent-soft: #33280f;
-  --sky: #6aa6e6;
-  --sky-soft: #132538;
-  --warning: #f08a4b;
-  --warning-soft: #3a1d0d;
-  --danger: #f27272;
-  --danger-soft: #3a1414;
-  --ring: #6cc786;
+  --background: #0f1a16;
+  --surface: #16231e;
+  --surface-2: #1d2c26;
+  --foreground: #f3ecdc;
+  --muted: #b5ab9a;
+  --border: #2a3a33;
+  --primary: #62b892;
+  --primary-strong: #7cc9a6;
+  --on-primary: #0b1a14;
+  --primary-soft: #173328;
+  --accent: #dda54e;
+  --accent-soft: #3a2c14;
+  --sky: #86bcdc;
+  --sky-soft: #10283a;
+  --warning: #e9905a;
+  --warning-soft: #3a220f;
+  --danger: #e58a9d;
+  --danger-soft: #3a1720;
+  --ring: #7cc9a6;
   --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
-  --paisaje-fondo: #14261a;
+  --paisaje-fondo: #13261e;
   --paisaje-opacidad: 0.5;
+  --marca-pasto: #dda54e;
+  --marca-recup: #cce087;
+  --marca-listo: #f3ecdc;
 }
 
 @theme inline {

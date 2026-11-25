@@ -145,10 +145,10 @@ export function AuthForm({ modo }: { modo: "sign-in" | "sign-up" }) {
 /** Ilustración: parcelas de potreros vistas desde arriba. */
 export function PaisajeParcelas({ className = "absolute inset-0 size-full" }: { className?: string }) {
   const celdas = [
-    [0, 0, 220, 170, "#9fd3a6"], [230, 0, 180, 120, "#f1d58e"], [420, 0, 260, 200, "#b6ddb5"],
-    [0, 180, 150, 210, "#a9cbee"], [160, 130, 250, 160, "#8ccb98"], [420, 210, 120, 180, "#f5bc96"],
-    [550, 210, 130, 150, "#b6ddb5"], [160, 300, 250, 190, "#f1d58e"], [0, 400, 150, 200, "#8ccb98"],
-    [420, 400, 260, 200, "#9fd3a6"], [160, 500, 250, 100, "#b6ddb5"], [550, 370, 130, 20, "#8ccb98"],
+    [0, 0, 220, 170, "#cce087"], [230, 0, 180, 120, "#ecc98f"], [420, 0, 260, 200, "#b5ccc6"],
+    [0, 180, 150, 210, "#a9dccf"], [160, 130, 250, 160, "#b3bd8f"], [420, 210, 120, 180, "#e6b8a8"],
+    [550, 210, 130, 150, "#b5ccc6"], [160, 300, 250, 190, "#ecc98f"], [0, 400, 150, 200, "#b3bd8f"],
+    [420, 400, 260, 200, "#cce087"], [160, 500, 250, 100, "#b5ccc6"], [550, 370, 130, 20, "#b3bd8f"],
   ] as const;
   return (
     <svg viewBox="0 0 680 600" preserveAspectRatio="xMidYMid slice" className={className}>

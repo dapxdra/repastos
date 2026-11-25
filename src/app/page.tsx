@@ -54,7 +54,7 @@ export default function Home() {
           <div className="relative aspect-[5/4] overflow-hidden rounded-3xl border border-border shadow-card">
             <PaisajeParcelas />
             <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-1.5">
-              {[["#2f8f46", "Listo"], ["#c9962b", "En descanso"], ["#c2410c", "En espera"], ["#2563a8", "Ocupado"]].map(([c, l]) => (
+              {[["#2f9a80", "Listo"], ["#d39a3f", "En descanso"], ["#8a2f45", "En espera"], ["#1f5f86", "Ocupado"]].map(([c, l]) => (
                 <span key={l} className="chip bg-surface/90 text-foreground shadow-sm backdrop-blur-sm"><span className="size-2 rounded-full" style={{ background: c }} />{l}</span>
               ))}
             </div>
