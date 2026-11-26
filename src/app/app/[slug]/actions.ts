@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 import { ErrorUsuario, idValido, puede, requireOrg, verificarLimite } from "@/lib/tenant";
 import { borrarObjeto, subirObjeto, tipoContenidoSeguro } from "@/lib/storage";
 import { datos, ejecutar, jsonSeguro, v, type Resultado } from "@/lib/acciones";
-import { COLORES_MODULO, MODULOS_SUGERIDOS, TIPOS_ZONA, TIPOS_ZONA_IDS, aHectareas, areaAprovechable, diasEntre, dosisPorHa, fechaCR, hoyCR, loteDeOrdeno, sumarDias } from "@/lib/dominio";
+import { COLORES_MODULO, MODULOS_SUGERIDOS, TIPOS_ZONA, TIPOS_ZONA_IDS, UNIDADES_AREA, aHectareas, areaAprovechable, diasEntre, dosisPorHa, fechaCR, hoyCR, loteDeOrdeno, sumarDias } from "@/lib/dominio";
 import { recalcularExcluidas } from "@/lib/area-excluida";
 import { calibracionAlturaOrg, potrerosConForraje } from "@/lib/consultas";
 import { kgDesdeAltura, parametrosPasto } from "@/lib/forraje";
@@ -137,7 +137,7 @@ export async function actualizarOrganizacion(slug: string, _p: Resultado, fd: Fo
       .object({
         nombre: v.texto(80),
         tipoProduccion: z.enum(["leche", "carne", "doble_proposito"]),
-        unidadArea: z.enum(["ha", "mz"]),
+        unidadArea: z.enum(UNIDADES_AREA),
       })
       .parse(datos(fd));
     await db.update(schema.organizaciones).set(d).where(eq(schema.organizaciones.id, org.id));

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Calculator, Fence, Leaf, Scissors, Sprout, Timer } from "lucide-react";
-import { HA_POR_MZ, fechaCortaCR, formatColones, formatNum, sumarDias, type UnidadArea } from "@/lib/dominio";
+import { aHectareas, aUnidad, dosisPorHa, fechaCortaCR, formatArea, formatColones, formatNum, porUnidadTasa, simboloUnidad, sumarDias, unidadTasa, type UnidadArea } from "@/lib/dominio";
 import { PASTOS, PASTO_GENERICO, descansoPorHojas, diasPorHoja, parametrosPasto, temperaturaPorAltitud } from "@/lib/forraje";
 
 type Defaults = {
@@ -104,13 +104,14 @@ function EtapaHoja({ d }: { d: Defaults }) {
 /** Respuesta al nitrógeno: kg MS extra por kg N y costo frente al concentrado. */
 function RespuestaN({ d }: { d: Defaults }) {
   const u = d.unidad;
-  const [dosis, setDosis] = useState(u === "mz" ? "70" : "100");
+  const ut = unidadTasa(u);
+  const [dosis, setDosis] = useState(ut === "mz" ? "70" : "100");
   const [pctN, setPctN] = useState("46");
   const [saco, setSaco] = useState(d.precioUreaSaco ? String(Math.round(d.precioUreaSaco)) : "24000");
   const [epoca, setEpoca] = useState<"lluvias" | "transicion" | "seca">("lluvias");
   const [concentrado, setConcentrado] = useState("15000");
   const respuesta = { lluvias: 20, transicion: 12, seca: 5 }[epoca];
-  const dosisHa = u === "mz" ? num(dosis) / HA_POR_MZ : num(dosis);
+  const dosisHa = dosisPorHa(num(dosis), u);
   const kgN = (dosisHa * num(pctN)) / 100;
   const extra = kgN * respuesta;
   const costoHa = (dosisHa / 45) * num(saco);
@@ -120,7 +121,7 @@ function RespuestaN({ d }: { d: Defaults }) {
   return (
     <Tarjeta titulo="Respuesta al nitrógeno" icono={Sprout} descripcion="Cuánto pasto extra produce el abono nitrogenado y si sale más barato que el concentrado.">
       <div className="grid grid-cols-2 gap-3">
-        <Entrada label={`Dosis de abono por ${u}`} value={dosis} onChange={setDosis} sufijo="kg" />
+        <Entrada label={`Dosis de abono por ${ut}`} value={dosis} onChange={setDosis} sufijo="kg" />
         <Entrada label="Nitrógeno del abono" value={pctN} onChange={setPctN} sufijo="% N" hint="Urea 46, nitrato 33,5, sulfato 21" />
         <Entrada label="Precio del saco de 45 kg" value={saco} onChange={setSaco} sufijo="₡" step="100" />
         <label className="block">
@@ -136,8 +137,8 @@ function RespuestaN({ d }: { d: Defaults }) {
       {valido && (
         <Resultado
           items={[
-            [`N aplicado por ${u}`, `${formatNum(u === "mz" ? kgN * HA_POR_MZ : kgN, 0)} kg`],
-            [`Pasto extra por ${u}`, `${formatNum(u === "mz" ? extra * HA_POR_MZ : extra, 0)} kg MS`],
+            [`N aplicado por ${ut}`, `${formatNum(porUnidadTasa(kgN, u), 0)} kg`],
+            [`Pasto extra por ${ut}`, `${formatNum(porUnidadTasa(extra, u), 0)} kg MS`],
             ["Costo del kg MS extra", formatColones(costoKgMs)],
             ["Concentrado por kg MS", formatColones(costoConc)],
           ]}
@@ -161,10 +162,10 @@ function Franjas({ d }: { d: Defaults }) {
   const [consumo, setConsumo] = useState(fijo(d.consumoAnimal || 13, 1));
   const [cobertura, setCobertura] = useState(String(Math.round(d.cobertura || 2800)));
   const [residuo, setResiduo] = useState("1500");
-  const [area, setArea] = useState(fijo(u === "mz" ? (d.areaHa || 1) / HA_POR_MZ : d.areaHa || 1, 2));
+  const [area, setArea] = useState(fijo(aUnidad(d.areaHa || 1, u), u === "m2" ? 0 : 2));
   const [ancho, setAncho] = useState("100");
   const [franjasDia, setFranjasDia] = useState("2");
-  const areaHa = u === "mz" ? num(area) * HA_POR_MZ : num(area);
+  const areaHa = aHectareas(num(area), u);
   const demanda = num(cabezas) * num(consumo);
   const cosechable = (num(cobertura) - num(residuo)) * 0.85;
   const valido = ok(areaHa, demanda, num(ancho), num(franjasDia)) && cosechable > 0 && num(franjasDia) >= 1;
@@ -179,7 +180,7 @@ function Franjas({ d }: { d: Defaults }) {
         <Entrada label="Pasto por animal" value={consumo} onChange={setConsumo} sufijo="kg MS/d" hint="Lo que come de pasto, ya descontado lo que reemplaza el suplemento" />
         <Entrada label="Cobertura de entrada" value={cobertura} onChange={setCobertura} sufijo="kg MS/ha" step="50" />
         <Entrada label="Residuo objetivo" value={residuo} onChange={setResiduo} sufijo="kg MS/ha" step="50" />
-        <Entrada label="Área del potrero" value={area} onChange={setArea} sufijo={u} />
+        <Entrada label="Área del potrero" value={area} onChange={setArea} sufijo={simboloUnidad(u)} />
         <Entrada label="Ancho del potrero" value={ancho} onChange={setAncho} sufijo="m" step="1" />
         <Entrada label="Cambios de franja por día" value={franjasDia} onChange={setFranjasDia} step="1" hint="2 = después de cada ordeño" />
       </div>
@@ -218,14 +219,14 @@ function BancoForrajero({ d }: { d: Defaults }) {
   const [rebrote, setRebrote] = useState(String(c.rebrote));
   const [cabezas, setCabezas] = useState(String(d.cabezas || 40));
   const [kgAnimal, setKgAnimal] = useState("3");
-  const [area, setArea] = useState("1");
+  const [area, setArea] = useState(u === "m2" ? "10000" : "1");
   const elegir = (i: number) => {
     setCultivo(i);
     setRend(String(CULTIVOS[i].tMsHa));
     setMs(String(CULTIVOS[i].ms));
     setRebrote(String(CULTIVOS[i].rebrote));
   };
-  const areaHa = u === "mz" ? num(area) * HA_POR_MZ : num(area);
+  const areaHa = aHectareas(num(area), u);
   const kgMsDia = num(cabezas) * num(kgAnimal);
   const kgVerdeDia = kgMsDia / (num(ms) / 100);
   const m2Dia = (kgMsDia / (num(rend) * 1000)) * 10_000;
@@ -244,7 +245,7 @@ function BancoForrajero({ d }: { d: Defaults }) {
         <Entrada label="Rendimiento por corte" value={rend} onChange={setRend} sufijo="t MS/ha" />
         <Entrada label="Materia seca" value={ms} onChange={setMs} sufijo="%" />
         <Entrada label="Días de rebrote" value={rebrote} onChange={setRebrote} sufijo="días" step="1" hint="0 si es una sola cosecha" />
-        <Entrada label={`Área sembrada`} value={area} onChange={setArea} sufijo={u} />
+        <Entrada label={`Área sembrada`} value={area} onChange={setArea} sufijo={simboloUnidad(u)} />
         <Entrada label="Animales" value={cabezas} onChange={setCabezas} step="1" />
         <Entrada label="Por animal y día" value={kgAnimal} onChange={setKgAnimal} sufijo="kg MS" />
       </div>
@@ -254,7 +255,7 @@ function BancoForrajero({ d }: { d: Defaults }) {
             ["Material verde por día", `${formatNum(kgVerdeDia, 0)} kg`],
             ["Cortar por día", `${formatNum(m2Dia, 0)} m²`],
             ["El área alcanza para", `${formatNum(diasArea, 0)} días`],
-            [necesaria != null ? `Área para corte continuo` : "Ensilaje total", necesaria != null ? `${formatNum(u === "mz" ? necesaria / HA_POR_MZ : necesaria, 2)} ${u}` : `${formatNum((areaHa * num(rend)) / (num(ms) / 100), 0)} t verdes`],
+            [necesaria != null ? `Área para corte continuo` : "Ensilaje total", necesaria != null ? formatArea(necesaria, u) : `${formatNum((areaHa * num(rend)) / (num(ms) / 100), 0)} t verdes`],
           ]}
         />
       )}
@@ -270,19 +271,19 @@ function BancoForrajero({ d }: { d: Defaults }) {
 /** Días de pastoreo que quedan con el forraje en pie. */
 function DiasDisponibles({ d }: { d: Defaults }) {
   const u = d.unidad;
-  const [area, setArea] = useState(fijo(u === "mz" ? d.areaHa / HA_POR_MZ : d.areaHa, 1));
+  const [area, setArea] = useState(fijo(aUnidad(d.areaHa, u), u === "m2" ? 0 : 1));
   const [cobertura, setCobertura] = useState(String(Math.round(d.cobertura || 2200)));
   const [residuo, setResiduo] = useState("1500");
   const [cabezas, setCabezas] = useState(String(d.cabezas || 40));
   const [consumo, setConsumo] = useState(fijo(d.consumoAnimal || 12, 1));
-  const areaHa = u === "mz" ? num(area) * HA_POR_MZ : num(area);
+  const areaHa = aHectareas(num(area), u);
   const stock = Math.max(0, num(cobertura) - num(residuo)) * 0.85 * areaHa;
   const demanda = num(cabezas) * num(consumo);
   const valido = ok(areaHa, stock, demanda) && demanda > 0;
   return (
     <Tarjeta titulo="Días de pastoreo disponibles" icono={Timer} descripcion="Con el forraje que hay hoy sobre el residuo, cuántos días aguanta el hato sin contar el rebrote.">
       <div className="grid grid-cols-2 gap-3">
-        <Entrada label="Área de pastoreo" value={area} onChange={setArea} sufijo={u} />
+        <Entrada label="Área de pastoreo" value={area} onChange={setArea} sufijo={simboloUnidad(u)} />
         <Entrada label="Cobertura promedio" value={cobertura} onChange={setCobertura} sufijo="kg MS/ha" step="50" />
         <Entrada label="Residuo" value={residuo} onChange={setResiduo} sufijo="kg MS/ha" step="50" />
         <Entrada label="Animales" value={cabezas} onChange={setCabezas} step="1" />

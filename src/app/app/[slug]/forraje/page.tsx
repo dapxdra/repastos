@@ -4,7 +4,7 @@ import { BarChart3, CloudSun, Gauge, Leaf, Scale, Sprout, TrendingUp } from "luc
 import { db, schema } from "@/db";
 import { requireOrg } from "@/lib/tenant";
 import { modulosDeOrg, potrerosConForraje } from "@/lib/consultas";
-import { aUnidad, fechaCortaCR, formatNum, plural } from "@/lib/dominio";
+import { formatArea, fechaCortaCR, formatNum, plural, porUnidadTasa, unidadTasa } from "@/lib/dominio";
 import { APROVECHAMIENTO, PRIORIDADES, REGIMENES_LLUVIA, temperaturaPorAltitud } from "@/lib/forraje";
 import { demandaDeLote } from "@/lib/plan";
 import { Card, ModuloChip, PageHeader, Stat, Tabla, Vacio } from "@/components/ui";
@@ -65,7 +65,8 @@ export default async function Forraje({ params, searchParams }: PageProps<"/app/
   const balanceCuna = barras.reduce((s, b, i) => s + (b.cobertura - b.objetivo) * (ordenados[i].areaUtilHa ?? 0), 0);
 
   const porPrioridad = (Object.keys(PRIORIDADES) as (keyof typeof PRIORIDADES)[]).map((k) => ({ k, n: potreros.filter((p) => p.prioridad === k).length })).filter((x) => x.n);
-  const kgU = (kgHa: number) => (u === "mz" ? kgHa * 0.69873 : kgHa);
+  const kgU = (kgHa: number) => porUnidadTasa(kgHa, u);
+  const ut = unidadTasa(u);
   const conCalibracion = potreros.filter((p) => p.est.calibracion !== 1).length;
 
   return (
@@ -88,8 +89,8 @@ export default async function Forraje({ params, searchParams }: PageProps<"/app/
       )}
 
       <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 xl:grid-cols-4">
-        <Stat icono={Gauge} etiqueta={`Cobertura promedio (kg MS/${u})`} valor={formatNum(coberturaProm == null ? null : kgU(coberturaProm), 0)} detalle={`${plural(conDato.length, "potrero")} con dato de ${potreros.length}`} />
-        <Stat icono={TrendingUp} tono="accent" etiqueta={`Crecimiento (kg MS/${u}/día)`} valor={formatNum(tasaProm == null ? null : kgU(tasaProm), 0)} detalle={`${formatNum(crecimiento / 1000, 1)} t MS/día en ${formatNum(aUnidad(area, u), 1)} ${u}`} />
+        <Stat icono={Gauge} etiqueta={`Cobertura promedio (kg MS/${ut})`} valor={formatNum(coberturaProm == null ? null : kgU(coberturaProm), 0)} detalle={`${plural(conDato.length, "potrero")} con dato de ${potreros.length}`} />
+        <Stat icono={TrendingUp} tono="accent" etiqueta={`Crecimiento (kg MS/${ut}/día)`} valor={formatNum(tasaProm == null ? null : kgU(tasaProm), 0)} detalle={`${formatNum(crecimiento / 1000, 1)} t MS/día en ${formatArea(area, u, 1)}`} />
         <Stat
           icono={Scale}
           tono={demanda > crecimiento ? "warning" : "primary"}
@@ -132,7 +133,7 @@ export default async function Forraje({ params, searchParams }: PageProps<"/app/
             <thead>
               <tr>
                 <th>Potrero</th>
-                <th className="text-right">kg MS/{u}</th>
+                <th className="text-right">kg MS/{ut}</th>
                 <th className="text-right">Crec./día</th>
                 <th className="text-right">Hojas</th>
                 <th className="text-right">En 7 d</th>

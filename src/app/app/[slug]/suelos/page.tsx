@@ -3,7 +3,7 @@ import { FlaskConical, Info, Mountain, Plus, Trash2 } from "lucide-react";
 import { db, schema } from "@/db";
 import { puede, requireOrg } from "@/lib/tenant";
 import { potrerosConEstado } from "@/lib/consultas";
-import { diasEntre, fechaCR, formatNum, hoyCR, HA_POR_MZ } from "@/lib/dominio";
+import { diasEntre, fechaCR, formatArea, formatNum, hoyCR, porUnidadTasa, unidadTasa } from "@/lib/dominio";
 import {
   MAX_CAL_POR_VEZ_T,
   NIVELES,
@@ -47,7 +47,8 @@ export default async function Suelos({ params }: PageProps<"/app/[slug]/suelos">
   const porId = new Map(potreros.map((p) => [p.id, p]));
   const grupos = [...new Map(potreros.map((p) => [p.modulo?.id ?? "", { clave: p.modulo?.id ?? "sin-modulo", nombre: p.modulo?.nombre ?? "Sin módulo", items: [] as typeof potreros }])).values()];
   for (const p of potreros) grupos.find((g) => g.clave === (p.modulo?.id ?? "sin-modulo"))!.items.push(p);
-  const porUnidad = (tha: number) => (u === "mz" ? tha * HA_POR_MZ : tha);
+  const porUnidad = (tha: number) => porUnidadTasa(tha, u);
+  const ut = unidadTasa(u);
 
   return (
     <>
@@ -135,7 +136,7 @@ export default async function Suelos({ params }: PageProps<"/app/[slug]/suelos">
                   {r.caco3Tha > 0 ? (
                     <>
                       <p className="font-semibold">
-                        Encalar: {formatNum(porUnidad(r.caco3Tha), 2)} t/{u} de CaCO₃ equivalente{area > 0 && ` · ${formatNum(r.caco3Tha * area, 1)} t para ${formatNum(u === "mz" ? area / HA_POR_MZ : area, 1)} ${u}`}
+                        Encalar: {formatNum(porUnidad(r.caco3Tha), 2)} t/{ut} de CaCO₃ equivalente{area > 0 && ` · ${formatNum(r.caco3Tha * area, 1)} t para ${formatArea(area, u, 1)}`}
                       </p>
                       {(cales.length ? cales : [{ id: "ref", nombre: "Cal agrícola (52 % CaO)", cao: "52", mgo: null }]).map((c) => {
                         const eq = equivalenteCaCO3(Number(c.cao ?? 0), Number(c.mgo ?? 0));
@@ -143,7 +144,7 @@ export default async function Suelos({ params }: PageProps<"/app/[slug]/suelos">
                         const tha = r.caco3Tha / eq;
                         return (
                           <p key={c.id} className="text-muted">
-                            {c.nombre}: <b className="num text-foreground">{formatNum(porUnidad(tha), 2)} t/{u}</b> ≈ {formatNum((porUnidad(tha) * 1000) / SACO_KG, 0)} sacos de {SACO_KG} kg por {u}
+                            {c.nombre}: <b className="num text-foreground">{formatNum(porUnidad(tha), 2)} t/{ut}</b> ≈ {formatNum((porUnidad(tha) * 1000) / SACO_KG, 0)} sacos de {SACO_KG} kg por {ut}
                           </p>
                         );
                       })}

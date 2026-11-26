@@ -10,6 +10,7 @@ import {
   dosisEnUnidad,
   fechaCortaCR,
   formatArea,
+  unidadTasa,
   formatColones,
   formatNum,
   hoyCR,
@@ -91,7 +92,7 @@ export default async function Aplicaciones({ params }: PageProps<"/app/[slug]/ap
             ) : (
               <Tabla>
                 <thead>
-                  <tr><th>Fecha</th><th>Producto</th><th>Potreros</th><th className="text-right">Dosis/{u}</th><th className="text-right">Total</th><th className="text-right">Costo</th><th>Espera</th><th /></tr>
+                  <tr><th>Fecha</th><th>Producto</th><th>Potreros</th><th className="text-right">Dosis/{unidadTasa(u)}</th><th className="text-right">Total</th><th className="text-right">Costo</th><th>Espera</th><th /></tr>
                 </thead>
                 <tbody>
                   {grupos.map((g) => (

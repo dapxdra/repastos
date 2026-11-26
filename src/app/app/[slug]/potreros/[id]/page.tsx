@@ -17,6 +17,9 @@ import {
   fechaCortaCR,
   fechaISOEnCR,
   formatArea,
+  porUnidadTasa,
+  simboloUnidad,
+  unidadTasa,
   formatColones,
   formatNum,
   hoyCR,
@@ -126,7 +129,8 @@ export default async function DetallePotrero({ params }: PageProps<"/app/[slug]/
   const recSuelo = suelo ? recomendar(suelo, saturacionTolerada(p.tipoPasto)) : null;
   // Último conteo de cada plaga en 60 días
   const plagas = monitoreos.filter((m, i, xs) => xs.findIndex((x) => x.plaga === m.plaga) === i);
-  const porU = (v: number) => (u === "mz" ? v * 0.69873 : v);
+  const porU = (v: number) => porUnidadTasa(v, u);
+  const ut = unidadTasa(u);
   const esAdmin = puede(rol, "administrador");
   const noPastoreable = (p.areaHa ?? 0) - (p.areaUtilHa ?? 0);
   const areaTexto =
@@ -144,7 +148,7 @@ export default async function DetallePotrero({ params }: PageProps<"/app/[slug]/
           ["Situación", detalleEstado(p)],
           ["Último aforo", p.ultimoAforo ? `${formatNum(p.ultimoAforo.kgMsHa, 0)} kg MS/ha · ${fechaCortaCR(p.ultimoAforo.fecha)}` : "Sin aforos"],
           [
-            `N-P₂O₅-K₂O aplicado, 12 meses (kg/${u})`,
+            `N-P₂O₅-K₂O aplicado, 12 meses (kg/${ut})`,
             `${formatNum(porU(anual.n), 0)} - ${formatNum(porU(anual.p), 0)} - ${formatNum(porU(anual.k), 0)}${anual.cao + anual.mgo + anual.s > 0 ? ` · CaO ${formatNum(porU(anual.cao), 0)} · MgO ${formatNum(porU(anual.mgo), 0)} · S ${formatNum(porU(anual.s), 0)}` : ""}${anual.n > N_ANUAL_MAX ? ` ⚠ más de ${N_ANUAL_MAX} kg N/ha: riesgo de pérdidas por lavado` : ""}`,
           ],
           ["Objetivos", `${p.diasDescansoObjetivo} d descanso · ${p.diasOcupacionObjetivo} d ocupación`],
@@ -306,7 +310,7 @@ export default async function DetallePotrero({ params }: PageProps<"/app/[slug]/
         <Card titulo="Aplicaciones" icono={Sprout}>
           {aplicaciones.length === 0 ? <p className="text-sm text-muted">Sin aplicaciones.</p> : (
             <Tabla>
-              <thead><tr><th>Fecha</th><th>Producto</th><th className="text-right">Dosis/{u}</th><th className="text-right">Costo</th><th>Espera</th></tr></thead>
+              <thead><tr><th>Fecha</th><th>Producto</th><th className="text-right">Dosis/{ut}</th><th className="text-right">Costo</th><th>Espera</th></tr></thead>
               <tbody>
                 {aplicaciones.map((a) => (
                   <tr key={a.id}>
@@ -376,11 +380,11 @@ export default async function DetallePotrero({ params }: PageProps<"/app/[slug]/
               ) : (
                 <input type="hidden" name="moduloId" value="" />
               )}
-              <Field label={`Área (${u})`} name="area" hint={p.tieneGeometria ? "Calculada del mapa" : undefined}>
-                <input className="input" type="number" step="any" min={0} disabled={p.tieneGeometria} defaultValue={p.areaHa != null ? Number(aUnidad(p.areaHa, u).toFixed(3)) : ""} />
+              <Field label={`Área (${simboloUnidad(u)})`} name="area" hint={p.tieneGeometria ? "Calculada del mapa" : undefined}>
+                <input className="input" type="number" step="any" min={0} disabled={p.tieneGeometria} defaultValue={p.areaHa != null ? Number(aUnidad(p.areaHa, u).toFixed(u === "m2" ? 0 : 3)) : ""} />
               </Field>
               <Field
-                label={`Descuento no pastoreable (${u})`}
+                label={`Descuento no pastoreable (${simboloUnidad(u)})`}
                 name="descuento"
                 hint={
                   p.areaExcluidaHa > 0.005
@@ -388,7 +392,7 @@ export default async function DetallePotrero({ params }: PageProps<"/app/[slug]/
                     : "Árboles, charral o pendientes que no marcaste en el mapa"
                 }
               >
-                <input className="input" type="number" inputMode="decimal" step="any" min={0} defaultValue={p.descuentoHa > 0 ? Number(aUnidad(p.descuentoHa, u).toFixed(3)) : ""} placeholder="0" />
+                <input className="input" type="number" inputMode="decimal" step="any" min={0} defaultValue={p.descuentoHa > 0 ? Number(aUnidad(p.descuentoHa, u).toFixed(u === "m2" ? 0 : 3)) : ""} placeholder="0" />
               </Field>
               <Field label="Días de descanso" name="diasDescanso"><input className="input" type="number" min={1} defaultValue={p.diasDescansoObjetivo} /></Field>
               <Field label="Días de ocupación" name="diasOcupacion"><input className="input" type="number" min={1} defaultValue={p.diasOcupacionObjetivo} /></Field>

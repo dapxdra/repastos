@@ -1,7 +1,7 @@
 "use client";
 import { useId, useState } from "react";
 import { AlertTriangle, FileUp, X } from "lucide-react";
-import { TIPOS_ZONA, TIPOS_ZONA_IDS, aUnidad, detectarTipoZona, formatArea, formatNum, type TipoZona, type UnidadArea } from "@/lib/dominio";
+import { TIPOS_ZONA, TIPOS_ZONA_IDS, detectarTipoZona, formatArea, formatNum, type TipoZona, type UnidadArea } from "@/lib/dominio";
 import { MAX_HA_IMPORTADO, type Poligono, type PoligonoImportado } from "@/lib/importar-mapa";
 import { ANCHO_DEFECTO, ANCHO_MAX_M, ANCHO_MIN_M, franja } from "@/lib/franja";
 import turfArea from "@turf/area";
@@ -209,7 +209,7 @@ export function PanelImportar({ archivo, poligonos, avisos, filas, setFilas, fin
               </div>
               <div className="mt-1.5 flex items-center gap-2 pl-[3.25rem] text-xs">
                 <span className={`num shrink-0 ${grande ? "font-semibold text-danger" : "text-muted"}`}>
-                  {formatNum(aUnidad(forma.areaHa, unidad), 2)} {unidad}
+                  {formatArea(forma.areaHa, unidad)}
                   {grande && " · demasiado grande"}
                 </span>
                 <select

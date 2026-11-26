@@ -7,7 +7,7 @@ import type { Map as MLMap, Marker, GeoJSONSource } from "maplibre-gl";
 import type { TerraDraw } from "terra-draw";
 import turfArea from "@turf/area";
 import { PenLine, X, Undo2, Layers, ArrowRight, Check, FileUp, CheckCircle2, Trees, Trash2 } from "lucide-react";
-import { ESTADOS, TIPOS_ZONA, TIPOS_ZONA_IDS, formatArea, aUnidad, formatNum, plural, type EstadoPotrero, type TipoZona, type UnidadArea } from "@/lib/dominio";
+import { ESTADOS, TIPOS_ZONA, TIPOS_ZONA_IDS, formatArea, formatNum, plural, type EstadoPotrero, type TipoZona, type UnidadArea } from "@/lib/dominio";
 import { ActionForm, BotonAccion, Field, Submit } from "@/components/forms";
 import { ModuloChip } from "@/components/ui";
 import type { Resultado } from "@/lib/acciones";
@@ -633,7 +633,7 @@ export function MapaPotreros({
                     areaTrazoHa! > 5000 ? (
                       <span className="text-danger">Área demasiado grande: acerca el mapa a tu finca y vuelve a dibujar</span>
                     ) : (
-                      <>{eje ? "Franja" : "Área"}: <b className="num">{formatNum(aUnidad(areaTrazoHa!, unidad), 2)} {unidad}</b></>
+                      <>{eje ? "Franja" : "Área"}: <b className="num">{formatArea(areaTrazoHa!, unidad)}</b></>
                     )
                   ) : forma === "linea" ? (
                     "Toca el mapa para marcar el recorrido; toca el último punto otra vez para terminar"

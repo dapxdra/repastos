@@ -8,6 +8,7 @@ import { datos, ejecutar, v, type Resultado } from "@/lib/acciones";
 import { PRODUCTOS_BASE } from "@/lib/dominio";
 import { MAX_GANADERIAS_PROPIAS } from "@/lib/planes";
 import { VERSION_LEGAL } from "@/lib/legal";
+import { UNIDADES_AREA } from "@/lib/dominio";
 
 export async function crearOrganizacion(_p: Resultado, fd: FormData) {
   let slug = "";
@@ -17,7 +18,7 @@ export async function crearOrganizacion(_p: Resultado, fd: FormData) {
       .object({
         nombre: v.texto(80),
         tipoProduccion: z.enum(["leche", "carne", "doble_proposito"]),
-        unidadArea: z.enum(["ha", "mz"]),
+        unidadArea: z.enum(UNIDADES_AREA),
         // Quien crea la ganadería es quien contrata el servicio: debe aceptar los Términos y la Política de Privacidad
         aceptaTerminos: z.literal("on", { error: "Debes aceptar los Términos y la Política de Privacidad." }),
       })

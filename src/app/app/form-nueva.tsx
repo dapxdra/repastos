@@ -1,6 +1,6 @@
 "use client";
 import { ActionForm, Field, Submit } from "@/components/forms";
-import { TIPOS_PRODUCCION } from "@/lib/dominio";
+import { NOMBRE_UNIDAD, TIPOS_PRODUCCION, UNIDADES_AREA, UNIDAD_AREA_DEFECTO } from "@/lib/dominio";
 import { crearOrganizacion } from "./actions";
 
 export function FormNuevaGanaderia() {
@@ -15,10 +15,9 @@ export function FormNuevaGanaderia() {
               {Object.entries(TIPOS_PRODUCCION).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
             </select>
         </Field>
-        <Field label="Unidad de área" name="unidadArea">
-          <select className="input" defaultValue="ha">
-              <option value="ha">Hectáreas (ha)</option>
-              <option value="mz">Manzanas (mz)</option>
+        <Field label="Unidad de área" name="unidadArea" hint="Se puede cambiar luego en Ajustes">
+          <select className="input" defaultValue={UNIDAD_AREA_DEFECTO}>
+              {UNIDADES_AREA.map((u) => <option key={u} value={u}>{NOMBRE_UNIDAD[u]}</option>)}
             </select>
         </Field>
       </div>

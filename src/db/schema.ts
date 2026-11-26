@@ -26,7 +26,7 @@ import { sql } from "drizzle-orm";
 
 export const rolEnum = pgEnum("rol", ["propietario", "administrador", "operador", "lector"]);
 export const tipoProduccionEnum = pgEnum("tipo_produccion", ["leche", "carne", "doble_proposito"]);
-export const unidadAreaEnum = pgEnum("unidad_area", ["ha", "mz"]);
+export const unidadAreaEnum = pgEnum("unidad_area", ["m2", "ha", "mz"]);
 export const categoriaLoteEnum = pgEnum("categoria_lote", [
   "vacas_produccion",
   "vacas_secas",
@@ -80,7 +80,7 @@ export const organizaciones = pgTable("organizaciones", {
   nombre: text("nombre").notNull(),
   slug: text("slug").notNull().unique(),
   tipoProduccion: tipoProduccionEnum("tipo_produccion").notNull().default("doble_proposito"),
-  unidadArea: unidadAreaEnum("unidad_area").notNull().default("ha"),
+  unidadArea: unidadAreaEnum("unidad_area").notNull().default("m2"),
   // Membresía (ver src/lib/planes.ts). La organización es el cliente que paga.
   plan: planEnum("plan").notNull().default("prueba"),
   estadoSuscripcion: estadoSuscripcionEnum("estado_suscripcion").notNull().default("prueba"),

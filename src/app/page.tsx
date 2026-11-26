@@ -19,7 +19,7 @@ async function Acciones() {
 }
 
 const FUNCIONES = [
-  { icon: Map, t: "Mapa satelital de potreros", d: "Dibuja cada aparto sobre la imagen satelital; el área en hectáreas o manzanas se calcula sola." },
+  { icon: Map, t: "Mapa satelital de potreros", d: "Dibuja cada aparto sobre la imagen satelital; el área en metros cuadrados, hectáreas o manzanas se calcula sola." },
   { icon: Repeat2, t: "Rotación sin adivinar", d: "Días de ocupación y descanso por potrero, alertas de sobrepastoreo y sugerencia del siguiente potrero." },
   { icon: Sprout, t: "Abonos y foliares", d: "Dosis por ha o mz, cantidad total, costo en colones y N-P-K aplicado por potrero en el año." },
   { icon: CalendarClock, t: "Tiempos de espera", d: "Cada producto define su período de reingreso: el potrero queda bloqueado hasta que sea seguro pastorear." },

@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { Building2, CreditCard, Download, Home, ShieldCheck, Users } from "lucide-react";
 import { db, schema } from "@/db";
 import { puede, requireOrg } from "@/lib/tenant";
-import { PROVINCIAS_CR, TIPOS_PRODUCCION, fechaCR, formatArea, hoyCR } from "@/lib/dominio";
+import { NOMBRE_UNIDAD, PROVINCIAS_CR, TIPOS_PRODUCCION, UNIDADES_AREA, fechaCR, formatArea, hoyCR, simboloUnidad } from "@/lib/dominio";
 import { ESTADOS_SUSCRIPCION, PLANES, estadoEfectivo, suscripcionesActivas } from "@/lib/planes";
 import { Card, PageHeader } from "@/components/ui";
 import { ActionForm, BotonAccion, Field, Submit } from "@/components/forms";
@@ -42,8 +42,8 @@ export default async function Ajustes({ params }: PageProps<"/app/[slug]/ajustes
                 <Field label="Producción" name="tipoProduccion">
                   <select className="input" defaultValue={org.tipoProduccion}>{Object.entries(TIPOS_PRODUCCION).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
                 </Field>
-                <Field label="Unidad de área" name="unidadArea" hint="1 mz = 0,6987 ha">
-                  <select className="input" defaultValue={org.unidadArea}><option value="ha">Hectáreas (ha)</option><option value="mz">Manzanas (mz)</option></select>
+                <Field label="Unidad de área" name="unidadArea" hint="1 ha = 10 000 m² · 1 mz = 6987 m²">
+                  <select className="input" defaultValue={org.unidadArea}>{UNIDADES_AREA.map((u) => <option key={u} value={u}>{NOMBRE_UNIDAD[u]}</option>)}</select>
                 </Field>
               </div>
             </fieldset>
@@ -100,7 +100,7 @@ export default async function Ajustes({ params }: PageProps<"/app/[slug]/ajustes
                 <select className="input" defaultValue=""><option value="">—</option>{PROVINCIAS_CR.map((x) => <option key={x}>{x}</option>)}</select>
               </Field>
               <Field label="Cantón" name="canton"><input className="input" placeholder="Ej. San Carlos" /></Field>
-              <Field label={`Área total (${org.unidadArea})`} name="area"><input className="input" type="number" step="any" min={0} /></Field>
+              <Field label={`Área total (${simboloUnidad(org.unidadArea)})`} name="area"><input className="input" type="number" step="any" min={0} /></Field>
               <Field label="Referencia" name="ubicacion"><input className="input" placeholder="Opcional" /></Field>
               <Field label="Altitud (msnm)" name="altitud" hint="Para estimar el rebrote del pasto">
                 <input className="input" type="number" inputMode="numeric" min={0} max={3800} step={10} placeholder="Ej. 1800" />

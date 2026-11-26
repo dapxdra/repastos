@@ -4,7 +4,7 @@ import { Fence, Layers3, Mountain, Plus, Sparkles, Trash2, Trees } from "lucide-
 import { db, schema } from "@/db";
 import { puede, requireOrg } from "@/lib/tenant";
 import { modulosDeOrg, potrerosConEstado, zonasDeOrg, type PotreroConEstado } from "@/lib/consultas";
-import { MODULOS_SUGERIDOS, TIPOS_ZONA, TIPOS_ZONA_IDS, descansoQuePermite, detalleEstado, formatArea, formatNum, plural } from "@/lib/dominio";
+import { MODULOS_SUGERIDOS, TIPOS_ZONA, TIPOS_ZONA_IDS, descansoQuePermite, detalleEstado, formatArea, simboloUnidad, formatNum, plural } from "@/lib/dominio";
 import { Card, EstadoBadge, ModuloChip, PageHeader, Tabla, Vacio } from "@/components/ui";
 import { ActionForm, BotonAccion, Field, Submit } from "@/components/forms";
 import { MarcarGrupo, SelectorColor } from "@/components/modulos";
@@ -275,7 +275,7 @@ export default async function Potreros({ params }: PageProps<"/app/[slug]/potrer
                 <Field label="Tipo de pasto" name="tipoPasto">
                   <input className="input" list="pastos-cr" />
                 </Field>
-                <Field label={`Área (${u})`} name="area"><input className="input" type="number" inputMode="decimal" step="any" min={0} /></Field>
+                <Field label={`Área (${simboloUnidad(u)})`} name="area"><input className="input" type="number" inputMode="decimal" step="any" min={0} /></Field>
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Días descanso" name="diasDescanso"><input className="input" type="number" min={1} defaultValue={30} /></Field>
                   <Field label="Días ocupación" name="diasOcupacion"><input className="input" type="number" min={1} defaultValue={1} /></Field>

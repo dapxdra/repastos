@@ -5,7 +5,7 @@ import { db, schema } from "@/db";
 import { puede, requireOrg } from "@/lib/tenant";
 import { potrerosConEstado } from "@/lib/consultas";
 import { demandaDeLote } from "@/lib/plan";
-import { HA_POR_MZ, diasEntre, fechaCortaCR, formatColones, formatNum, hoyCR, sumarDias } from "@/lib/dominio";
+import { porUnidadTasa, unidadTasa, diasEntre, fechaCortaCR, formatColones, formatNum, hoyCR, sumarDias } from "@/lib/dominio";
 import { UMBRAL_BAJO_RENDIMIENTO, gananciasDePeso, mediana, resumenLeche } from "@/lib/indicadores";
 import { Card, PageHeader, Stat, Tabla, Vacio } from "@/components/ui";
 import { ActionForm, BotonAccion, Field, Submit } from "@/components/forms";
@@ -106,23 +106,24 @@ export default async function Produccion({ params }: PageProps<"/app/[slug]/prod
     .filter((x) => x.ultimo);
   const kgCarneAno = porLote.reduce((s, x) => s + x.kgAno, 0);
 
-  const enU = (porHa: number) => (u === "mz" ? porHa * HA_POR_MZ : porHa);
+  const enU = (porHa: number) => porUnidadTasa(porHa, u);
+  const ut = unidadTasa(u);
 
   return (
     <>
       <PageHeader titulo="Producción" descripcion="Leche, pesajes y lo que rinde cada potrero: pasto cosechado, litros por hectárea y costo del pasto." />
 
       <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 xl:grid-cols-4">
-        <Stat icono={Leaf} etiqueta={`Pasto cosechado (t MS/${u}/año)`} valor={formatNum(tHaAnoFinca == null ? null : enU(tHaAnoFinca), 1)} detalle={`Estimado del consumo de los lotes · ${formatNum(kgTotal / 1000, 0)} t MS en ${diasVentana} d`} />
+        <Stat icono={Leaf} etiqueta={`Pasto cosechado (t MS/${ut}/año)`} valor={formatNum(tHaAnoFinca == null ? null : enU(tHaAnoFinca), 1)} detalle={`Estimado del consumo de los lotes · ${formatNum(kgTotal / 1000, 0)} t MS en ${diasVentana} d`} />
         <Stat icono={Coins} tono="accent" etiqueta="Costo del pasto (₡/kg MS)" valor={costoKgMs == null ? "—" : formatColones(costoKgMs)} detalle={`Insumos ${formatColones(costoInsumos)} · labores ${formatColones(costoLabores)}`} />
         {leche ? (
           <>
-            <Stat icono={Milk} tono="sky" etiqueta={`Leche (L/${u}/año)`} valor={formatNum(litrosAno != null && areaHa > 0 ? enU(litrosAno / areaHa) : null, 0)} detalle={rl.litrosDia ? `${formatNum(rl.litrosDia, 0)} L/día${rl.litrosVacaDia ? ` · ${formatNum(rl.litrosVacaDia, 1)} L/vaca/día` : ""}` : "Registra la leche entregada"} />
+            <Stat icono={Milk} tono="sky" etiqueta={`Leche (L/${ut}/año)`} valor={formatNum(litrosAno != null && areaHa > 0 ? enU(litrosAno / areaHa) : null, 0)} detalle={rl.litrosDia ? `${formatNum(rl.litrosDia, 0)} L/día${rl.litrosVacaDia ? ` · ${formatNum(rl.litrosVacaDia, 1)} L/vaca/día` : ""}` : "Registra la leche entregada"} />
             <Stat icono={TrendingUp} tono="warning" etiqueta="Costo del pasto por litro" valor={costoPorLitro == null ? "—" : formatColones(costoPorLitro)} detalle={precioProm ? `${formatNum((costoPorLitro ?? 0) / precioProm * 100, 0)} % del precio (${formatColones(precioProm)}/L)` : "Anota el precio por litro para compararlo"} />
           </>
         ) : (
           <>
-            <Stat icono={Scale} tono="sky" etiqueta={`Carne producida (kg/${u}/año)`} valor={formatNum(areaHa > 0 && kgCarneAno > 0 ? enU(kgCarneAno / areaHa) : null, 0)} detalle={`${formatNum(kgCarneAno, 0)} kg ganados en 12 meses`} />
+            <Stat icono={Scale} tono="sky" etiqueta={`Carne producida (kg/${ut}/año)`} valor={formatNum(areaHa > 0 && kgCarneAno > 0 ? enU(kgCarneAno / areaHa) : null, 0)} detalle={`${formatNum(kgCarneAno, 0)} kg ganados en 12 meses`} />
             <Stat icono={TrendingUp} tono="warning" etiqueta="Costo del pasto por kg ganado" valor={kgCarneAno > 0 ? formatColones((costoTotal / diasVentana) * 365 / kgCarneAno) : "—"} detalle="Insumos y labores ÷ kg de peso ganado" />
           </>
         )}
@@ -141,7 +142,7 @@ export default async function Produccion({ params }: PageProps<"/app/[slug]/prod
               <>
                 <Tabla>
                   <thead>
-                    <tr><th>Potrero</th><th className="text-right">t MS/{u}/año</th><th className="text-right">vs. mediana</th><th>Diagnóstico</th></tr>
+                    <tr><th>Potrero</th><th className="text-right">t MS/{ut}/año</th><th className="text-right">vs. mediana</th><th>Diagnóstico</th></tr>
                   </thead>
                   <tbody>
                     {filas.map(({ p, kg, tHaAno }) => {

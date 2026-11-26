@@ -12,6 +12,8 @@ import {
   sumarDias,
   type TipoProducto,
   type UnidadArea,
+  formatArea,
+  unidadTasa,
 } from "@/lib/dominio";
 import type { Resultado } from "@/lib/acciones";
 
@@ -123,7 +125,7 @@ export function FormAplicacion({
       </fieldset>
 
       <div className="grid grid-cols-2 gap-3">
-        <Field label={`Dosis (${prod.unidad}/${unidad})`} name="dosis" required>
+        <Field label={`Dosis (${prod.unidad}/${unidadTasa(unidad)})`} name="dosis" required>
           <input className="input" type="number" inputMode="decimal" step="any" min={0} value={dosis} onChange={(e) => setDosis(e.target.value)} />
         </Field>
         <Field label="Fecha" name="fecha" required>
@@ -144,7 +146,7 @@ export function FormAplicacion({
 
       {sel.size > 0 && (
         <div className="space-y-1 rounded-xl bg-surface-2 p-3 text-sm" aria-live="polite">
-          <p className="flex justify-between"><span className="text-muted">Área aprovechable</span><b className="num">{formatNum(unidad === "mz" ? areaHa / 0.69873 : areaHa, 2)} {unidad}</b></p>
+          <p className="flex justify-between"><span className="text-muted">Área aprovechable</span><b className="num">{formatArea(areaHa, unidad)}</b></p>
           <p className="flex justify-between"><span className="text-muted">Cantidad total</span><b className="num">{formatNum(cantidad, 1)} {prod.unidad}</b></p>
           {prod.precio != null && <p className="flex justify-between"><span className="text-muted">Costo estimado</span><b className="num">{formatColones(cantidad * prod.precio)}</b></p>}
           {prod.reingreso > 0 && fecha && (

@@ -8,18 +8,33 @@ export const HA_POR_MZ = 0.69873;
 /** Unidad animal: 450 kg de peso vivo */
 export const KG_POR_UA = 450;
 
-export type UnidadArea = "ha" | "mz";
+export type UnidadArea = "m2" | "ha" | "mz";
+/** Unidad por defecto para ganaderías nuevas. */
+export const UNIDAD_AREA_DEFECTO: UnidadArea = "m2";
+export const UNIDADES_AREA = ["m2", "ha", "mz"] as const satisfies readonly UnidadArea[];
+/** Hectáreas que mide una unidad de área (todo se guarda en ha). */
+export const HA_POR_UNIDAD: Record<UnidadArea, number> = { m2: 0.0001, ha: 1, mz: HA_POR_MZ };
+export const NOMBRE_UNIDAD: Record<UnidadArea, string> = { m2: "Metros cuadrados (m²)", ha: "Hectáreas (ha)", mz: "Manzanas (mz)" };
+/** Símbolo para mostrar: m², ha, mz */
+export const simboloUnidad = (u: UnidadArea) => (u === "m2" ? "m²" : u);
+/**
+ * Unidad para tasas «por área» (dosis, carga animal, kg MS, t de cal…).
+ * Por m² darían números diminutos, así que en m² las tasas se expresan por hectárea.
+ */
+export const unidadTasa = (u: UnidadArea): Exclude<UnidadArea, "m2"> => (u === "m2" ? "ha" : u);
 
-export const aUnidad = (ha: number, u: UnidadArea) => (u === "mz" ? ha / HA_POR_MZ : ha);
-export const aHectareas = (valor: number, u: UnidadArea) => (u === "mz" ? valor * HA_POR_MZ : valor);
-/** Dosis ingresada por unidad de área → dosis por hectárea */
-export const dosisPorHa = (dosis: number, u: UnidadArea) => (u === "mz" ? dosis / HA_POR_MZ : dosis);
-export const dosisEnUnidad = (porHa: number, u: UnidadArea) => (u === "mz" ? porHa * HA_POR_MZ : porHa);
+export const aUnidad = (ha: number, u: UnidadArea) => ha / HA_POR_UNIDAD[u];
+export const aHectareas = (valor: number, u: UnidadArea) => valor * HA_POR_UNIDAD[u];
+/** Valor por hectárea → valor por la unidad de tasa (kg/ha → kg/mz) */
+export const porUnidadTasa = (porHa: number, u: UnidadArea) => porHa * HA_POR_UNIDAD[unidadTasa(u)];
+/** Dosis ingresada por unidad de tasa → dosis por hectárea */
+export const dosisPorHa = (dosis: number, u: UnidadArea) => dosis / HA_POR_UNIDAD[unidadTasa(u)];
+export const dosisEnUnidad = porUnidadTasa;
 
 const nf = (max = 1) => new Intl.NumberFormat("es-CR", { maximumFractionDigits: max });
 export const formatNum = (n: number | null | undefined, max = 1) => (n == null || Number.isNaN(n) ? "—" : nf(max).format(n));
 export const formatArea = (ha: number | string | null | undefined, u: UnidadArea, max = 2) =>
-  ha == null || ha === "" ? "—" : `${formatNum(aUnidad(Number(ha), u), max)} ${u}`;
+  ha == null || ha === "" ? "—" : `${formatNum(aUnidad(Number(ha), u), u === "m2" ? 0 : max)} ${simboloUnidad(u)}`;
 export const formatColones = (n: number | string | null | undefined) =>
   n == null || n === ""
     ? "—"

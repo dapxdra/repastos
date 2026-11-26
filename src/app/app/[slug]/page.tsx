@@ -29,6 +29,7 @@ import {
   detalleEstado,
   fechaCortaCR,
   formatArea,
+  unidadTasa,
   formatColones,
   formatNum,
   plural,
@@ -134,12 +135,12 @@ export default async function Inicio({ params }: PageProps<"/app/[slug]">) {
       espera: ps.filter((p) => p.estado === "en_espera").length,
       hatos,
       area,
-      carga: area > 0 && ua > 0 ? ua / aUnidad(area, u) : null,
+      carga: area > 0 && ua > 0 ? ua / aUnidad(area, unidadTasa(u)) : null,
       permite: descansoQuePermite(ps.length, ocup),
       desc,
     };
   }).filter((r) => r.n > 0 || r.hatos.length > 0);
-  const carga = areaTotal > 0 ? uaTotal / aUnidad(areaTotal, u) : null;
+  const carga = areaTotal > 0 ? uaTotal / aUnidad(areaTotal, unidadTasa(u)) : null;
 
   const alertas = [
     ...retiros.map((r) => ({
@@ -190,7 +191,7 @@ export default async function Inicio({ params }: PageProps<"/app/[slug]">) {
       <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 xl:grid-cols-4" data-testid="kpis">
         <Stat icono={CheckCircle2} etiqueta="Listos para pastoreo" valor={resumen?.totales.listos ?? cuenta("listo")} detalle={`${cuenta("en_descanso")} en descanso · ${plural(cuenta("ocupado"), "ocupado")}`} />
         <Stat icono={Hourglass} tono="warning" etiqueta="En espera por aplicación" valor={resumen?.totales.enEspera ?? cuenta("en_espera")} detalle={proximas.length ? `${proximas.length} se liberan esta semana` : "Sin liberaciones próximas"} />
-        <Stat icono={Gauge} tono="sky" etiqueta={`Carga animal (UA/${u})`} valor={formatNum(carga, 2)} detalle={`${formatNum(uaTotal, 1)} UA en ${formatArea(areaTotal, u, 1)} pastoreables`} />
+        <Stat icono={Gauge} tono="sky" etiqueta={`Carga animal (UA/${unidadTasa(u)})`} valor={formatNum(carga, 2)} detalle={`${formatNum(uaTotal, 1)} UA en ${formatArea(areaTotal, u, 1)} pastoreables`} />
         <Stat icono={CloudRain} tono="accent" etiqueta="Lluvia, últimos 30 días" valor={`${formatNum(Number(lluvia30[0].mm), 0)} mm`} detalle={`Insumos aplicados: ${formatColones(gasto30[0].total)}`} />
       </div>
 
@@ -245,7 +246,7 @@ export default async function Inicio({ params }: PageProps<"/app/[slug]">) {
                 <p className="mt-2 text-sm">
                   <b className="num">{r.listos}</b> listos
                   {r.espera > 0 && <> · <b className="num text-warning">{r.espera}</b> en espera</>}
-                  {r.carga != null && <> · <b className="num">{formatNum(r.carga, 2)}</b> UA/{u}</>}
+                  {r.carga != null && <> · <b className="num">{formatNum(r.carga, 2)}</b> UA/{unidadTasa(u)}</>}
                 </p>
                 <p className="mt-0.5 truncate text-xs text-muted">
                   {r.hatos.length ? r.hatos.map((h) => `${h.nombre} (${h.cabezas} cab.)`).join(", ") : "Sin hato asignado"}
