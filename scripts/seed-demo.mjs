@@ -159,7 +159,7 @@ try {
   }
 
   const org = await uno(
-    `insert into organizaciones (nombre, slug, tipo_produccion, unidad_area) values ($1, $2, 'leche', 'mz') returning id`,
+    `insert into organizaciones (nombre, slug, tipo_produccion, unidad_area) values ($1, $2, 'leche', 'm2') returning id`,
     ["Lechería La Esperanza (demo)", SLUG],
   );
   const O = org.id;
