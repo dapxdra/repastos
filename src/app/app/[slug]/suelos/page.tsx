@@ -172,7 +172,7 @@ export default async function Suelos({ params }: PageProps<"/app/[slug]/suelos">
               <Field label="Nombre de la muestra" name="nombre" required>
                 <input className="input" placeholder="Ej. Módulo ordeño A" />
               </Field>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-campos gap-3">
                 {fincas.length > 1 ? (
                   <Field label="Finca" name="fincaId">
                     <select className="input">{fincas.map((f) => <option key={f.id} value={f.id}>{f.nombre}</option>)}</select>
@@ -183,7 +183,7 @@ export default async function Suelos({ params }: PageProps<"/app/[slug]/suelos">
                 <Field label="Fecha del muestreo" name="fecha" required>
                   <input className="input" type="date" max={hoy} defaultValue={hoy} />
                 </Field>
-                <Field label="Laboratorio" name="laboratorio" className={fincas.length > 1 ? "col-span-2" : ""}>
+                <Field label="Laboratorio" name="laboratorio" className={fincas.length > 1 ? "col-span-full" : ""}>
                   <input className="input" placeholder="CIA-UCR, INTA…" />
                 </Field>
               </div>

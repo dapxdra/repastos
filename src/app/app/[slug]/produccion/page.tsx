@@ -240,12 +240,12 @@ export default async function Produccion({ params }: PageProps<"/app/[slug]/prod
                     {lotes.map((l) => <option key={l.id} value={l.id}>{l.nombre}</option>)}
                   </select>
                 </Field>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-campos gap-3">
                   <Field label="Desde" name="desde" required><input className="input" type="date" max={hoy} defaultValue={sumarDias(hoy, -14)} /></Field>
                   <Field label="Hasta" name="hasta" required><input className="input" type="date" max={hoy} defaultValue={hoy} /></Field>
                   <Field label="Litros" name="litros" required><input className="input" type="number" inputMode="decimal" step="any" min={0} /></Field>
                   <Field label="Vacas en ordeño" name="vacas"><input className="input" type="number" inputMode="numeric" min={1} /></Field>
-                  <Field label="Precio por litro (₡)" name="precio" className="col-span-2" hint="De la liquidación de la cooperativa (opcional)">
+                  <Field label="Precio por litro (₡)" name="precio" className="col-span-full" hint="De la liquidación de la cooperativa (opcional)">
                     <input className="input" type="number" inputMode="decimal" step="any" min={0} />
                   </Field>
                 </div>
@@ -260,10 +260,10 @@ export default async function Produccion({ params }: PageProps<"/app/[slug]/prod
                 <Field label="Lote" name="loteId">
                   <select className="input">{lotes.map((l) => <option key={l.id} value={l.id}>{l.nombre} ({l.cabezas} cab.)</option>)}</select>
                 </Field>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-campos gap-3">
                   <Field label="Fecha" name="fecha"><input className="input" type="date" max={hoy} defaultValue={hoy} /></Field>
                   <Field label="Animales pesados" name="cabezas" required><input className="input" type="number" inputMode="numeric" min={1} /></Field>
-                  <Field label="Peso promedio (kg)" name="peso" required className="col-span-2" hint="Actualiza el peso del lote para calcular su consumo">
+                  <Field label="Peso promedio (kg)" name="peso" required className="col-span-full" hint="Actualiza el peso del lote para calcular su consumo">
                     <input className="input" type="number" inputMode="decimal" step="any" min={0} />
                   </Field>
                 </div>

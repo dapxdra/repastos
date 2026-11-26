@@ -124,19 +124,19 @@ export function FormAplicacion({
         </div>
       </fieldset>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-campos gap-3">
         <Field label={`Dosis (${prod.unidad}/${unidadTasa(unidad)})`} name="dosis" required>
           <input className="input" type="number" inputMode="decimal" step="any" min={0} value={dosis} onChange={(e) => setDosis(e.target.value)} />
         </Field>
         <Field label="Fecha" name="fecha" required>
           <input className="input" type="date" max={hoy} value={fecha} onChange={(e) => setFecha(e.target.value)} />
         </Field>
-        <Field label="Método" name="metodo" className="col-span-2">
+        <Field label="Método" name="metodo" className="col-span-full">
           <select className="input" defaultValue={prod.tipo === "foliar" || prod.tipo === "herbicida" ? "bomba_espalda" : "voleo"} key={prod.tipo}>
               {Object.entries(METODOS_APLICACION).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
             </select>
         </Field>
-        <Field label="Responsable" name="responsable" className="col-span-2">
+        <Field label="Responsable" name="responsable" className="col-span-full">
           <input className="input" placeholder="Quién aplicó" autoComplete="name" />
         </Field>
       </div>

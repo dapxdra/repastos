@@ -124,7 +124,7 @@ export default async function Plagas({ params }: PageProps<"/app/[slug]/plagas">
                     {(Object.keys(PLAGAS) as Plaga[]).map((k) => <option key={k} value={k}>{PLAGAS[k].label} — {PLAGAS[k].unidad}</option>)}
                   </select>
                 </Field>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-campos gap-3">
                   <Field label="Conteo promedio" name="conteo" required>
                     <input className="input" type="number" inputMode="decimal" step="any" min={0} />
                   </Field>

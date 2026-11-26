@@ -131,13 +131,43 @@ h3 {
     @apply p-4 sm:p-5;
   }
   .input {
-    @apply block min-h-11 w-full rounded-lg border border-border bg-surface px-3 text-[15px] text-foreground transition-colors placeholder:text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25 aria-[invalid=true]:border-danger aria-[invalid=true]:ring-danger/20;
+    @apply block min-h-11 w-full min-w-0 rounded-lg border border-border bg-surface px-3 text-[15px] text-foreground transition-colors placeholder:text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25 aria-[invalid=true]:border-danger aria-[invalid=true]:ring-danger/20;
   }
   select.input {
     @apply pr-8;
   }
   textarea.input {
     @apply py-2;
+  }
+  /*
+   * Rejilla de formulario: 2 columnas solo si cada una mide al menos 9rem (lo que ocupa una fecha completa
+   * "dd/mm/aaaa" con su icono); si el contenedor es más angosto, 1 columna. Depende del ancho real de la
+   * tarjeta, no de la pantalla. Las filas completas usan col-span-full (válido con 1 o 2 columnas).
+   */
+  .grid-campos {
+    grid-template-columns: repeat(auto-fit, minmax(max(9rem, calc((100% - 0.75rem) / 2)), 1fr));
+  }
+  /*
+   * Fechas y horas: el control nativo trae ancho mínimo propio (~144 px en Chromium, más en iOS/Android) y en
+   * Safari iOS ignora la altura y centra el texto. Se normalizan para que midan y se alineen como cualquier .input.
+   */
+  input.input:is([type="date"], [type="month"], [type="time"], [type="datetime-local"]) {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 2.75rem;
+    padding-right: 0.5rem;
+  }
+  input.input::-webkit-date-and-time-value {
+    text-align: left;
+    min-height: 1.5em;
+  }
+  input.input::-webkit-datetime-edit {
+    padding: 0;
+  }
+  input.input::-webkit-calendar-picker-indicator {
+    margin-inline-start: 0.25rem;
+    padding: 0.25rem;
+    cursor: pointer;
   }
   .btn {
     @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-on-primary transition-[background-color,transform] duration-150 hover:bg-primary-strong active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60;
@@ -174,6 +204,8 @@ h3 {
   display: grid;
   grid-row: span 2;
   grid-template-rows: subgrid;
+  /* minmax(0, …): el control se ajusta a la celda en vez de imponer su ancho mínimo (p. ej. inputs de fecha) */
+  grid-template-columns: minmax(0, 1fr);
   row-gap: 0;
 }
 .grid > .field > .label {

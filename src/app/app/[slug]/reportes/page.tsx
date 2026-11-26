@@ -108,23 +108,23 @@ export default async function Reportes({ params, searchParams }: PageProps<"/app
         acciones={<AccionesReporte resumen={resumen} />}
       />
 
-      <form className="card card-pad mb-4 grid grid-cols-2 items-end gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] print:hidden" method="get">
-        <label>
+      <form className="card card-pad mb-4 grid grid-campos items-end gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] print:hidden" method="get">
+        <label className="field">
           <span className="label">Desde</span>
           <input className="input" type="date" name="desde" defaultValue={desde} max={hoy} />
         </label>
-        <label>
+        <label className="field">
           <span className="label">Hasta</span>
           <input className="input" type="date" name="hasta" defaultValue={hasta} max={hoy} />
         </label>
-        <label className="col-span-2 sm:col-span-1">
+        <label className="field col-span-full sm:col-span-1">
           <span className="label">Lote</span>
           <select className="input" name="lote" defaultValue={loteId ?? ""}>
             <option value="">Todos</option>
             {lotes.map((l) => <option key={l.id} value={l.id}>{l.nombre}</option>)}
           </select>
         </label>
-        <button type="submit" className="btn col-span-2 sm:col-span-1">Ver reporte</button>
+        <button type="submit" className="btn col-span-full sm:col-span-1 sm:row-span-2 sm:self-end">Ver reporte</button>
       </form>
 
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">

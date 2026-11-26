@@ -70,9 +70,9 @@ export default async function Campo({ params }: PageProps<"/app/[slug]/campo">) 
             <figcaption className="mt-1 flex justify-between text-xs text-muted"><span>{fechaCortaCR(desde)}</span><span>Hoy</span></figcaption>
           </figure>
           {esOperador && fincas.length > 0 && (
-            <ActionForm action={registrarLluvia.bind(null, slug)} className="mt-4 grid grid-cols-2 items-end gap-3 border-t border-border pt-4 sm:grid-cols-[1fr_1fr_auto]">
+            <ActionForm action={registrarLluvia.bind(null, slug)} className="mt-4 grid grid-campos gap-3 border-t border-border pt-4">
               {fincas.length > 1 ? (
-                <Field label="Finca" name="fincaId" className="col-span-2 sm:col-span-3">
+                <Field label="Finca" name="fincaId" className="col-span-full">
                   <select className="input">{fincas.map((f) => <option key={f.id} value={f.id}>{f.nombre}</option>)}</select>
                 </Field>
               ) : (
@@ -84,15 +84,15 @@ export default async function Campo({ params }: PageProps<"/app/[slug]/campo">) 
               <Field label="Milímetros" name="mm" required>
                 <input className="input" type="number" inputMode="decimal" min={0} step="0.1" />
               </Field>
-              <Submit className="btn col-span-2 sm:col-span-1">Guardar</Submit>
+              <Submit className="btn col-span-full">Guardar</Submit>
             </ActionForm>
           )}
         </Card>
 
         <Card titulo="Registrar aforo" icono={Ruler}>
           {esOperador && potreros.length > 0 ? (
-            <ActionForm action={registrarAforo.bind(null, slug)} className="grid grid-cols-2 gap-3">
-              <Field label="Potrero" name="potreroId" className="col-span-2">
+            <ActionForm action={registrarAforo.bind(null, slug)} className="grid grid-campos gap-3">
+              <Field label="Potrero" name="potreroId" className="col-span-full">
                 <select className="input">
                   {potreros.map((x) => {
                     const pp = parametrosPasto(x.tipoPasto);
@@ -112,10 +112,10 @@ export default async function Campo({ params }: PageProps<"/app/[slug]/campo">) 
               <Field label="kg MS/ha" name="kgMsHa" hint="Solo si pesaste (cuadro de corte o plato). Con regla se calcula de la altura">
                 <input className="input" type="number" inputMode="decimal" min={0} step="any" />
               </Field>
-              <Field label="Hojas por rebrote" name="hojas" hint="Hojas vivas en un tallo típico" className="col-span-2">
+              <Field label="Hojas por rebrote" name="hojas" hint="Hojas vivas en un tallo típico" className="col-span-full">
                 <input className="input" type="number" inputMode="decimal" min={0} max={12} step="0.5" />
               </Field>
-              <Submit className="btn col-span-2">Guardar aforo</Submit>
+              <Submit className="btn col-span-full">Guardar aforo</Submit>
             </ActionForm>
           ) : (
             <p className="text-sm text-muted">Crea potreros para registrar aforos.</p>

@@ -132,13 +132,13 @@ export default async function Labores({ params }: PageProps<"/app/[slug]/labores
         {esOperador && potreros.length > 0 && (
           <Card titulo="Registrar labor" icono={Plus} className="self-start">
             <ActionForm action={registrarEvento.bind(null, slug)}>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Labor" name="tipo" className="col-span-2">
+              <div className="grid grid-campos gap-3">
+                <Field label="Labor" name="tipo" className="col-span-full">
                   <select className="input" defaultValue="chapia">
                     {Object.entries(TIPOS_EVENTO).map(([k, t]) => <option key={k} value={k}>{t.label}</option>)}
                   </select>
                 </Field>
-                <Field label="Detalle" name="titulo" className="col-span-2" hint="Ej. Resiembra con Mulato II, pacas de Transvala">
+                <Field label="Detalle" name="titulo" className="col-span-full" hint="Ej. Resiembra con Mulato II, pacas de Transvala">
                   <input className="input" placeholder="Opcional" />
                 </Field>
                 <Field label="Fecha" name="fecha">
@@ -153,14 +153,14 @@ export default async function Labores({ params }: PageProps<"/app/[slug]/labores
                 <Field label="Unidad" name="unidad">
                   <input className="input" list="unidades-labor" placeholder="pacas, kg, jornales" />
                 </Field>
-                <label className="col-span-2 flex min-h-11 items-center gap-2 text-sm">
+                <label className="col-span-full flex min-h-11 items-center gap-2 text-sm">
                   <input type="checkbox" name="pendiente" className="size-5 accent-[var(--primary)]" />
                   Es una tarea pendiente (solo para «Tarea»)
                 </label>
-                <Field label="Responsable" name="responsable" className="col-span-2">
+                <Field label="Responsable" name="responsable" className="col-span-full">
                   <input className="input" placeholder="Opcional" />
                 </Field>
-                <Field label="Notas" name="notas" className="col-span-2">
+                <Field label="Notas" name="notas" className="col-span-full">
                   <textarea className="input" rows={2} />
                 </Field>
               </div>
