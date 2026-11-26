@@ -47,7 +47,7 @@ Todas las tablas llevan `org_id`. Cada acción y consulta valida la membresía c
 
 ## Unidades
 
-Las áreas se guardan siempre en hectáreas y las dosis por hectárea. Área aprovechable = área del potrero − `area_excluida_ha` (calculada en [src/lib/area-excluida.ts](src/lib/area-excluida.ts) al guardar zonas o límites) − `descuento_ha`. La interfaz convierte a manzanas (1 mz = 0,69873 ha) según la preferencia de cada ganadería.
+Las áreas se guardan siempre en hectáreas y las dosis por hectárea. Área aprovechable = área del potrero − `area_excluida_ha` (calculada en [src/lib/area-excluida.ts](src/lib/area-excluida.ts) al guardar zonas o límites) − `descuento_ha`. La interfaz muestra y recibe las áreas en la unidad de cada ganadería: metros cuadrados (predeterminada), hectáreas o manzanas (1 mz = 0,69873 ha). Las tasas por área (dosis, carga animal, kg MS, t de cal) se expresan por ha cuando la unidad es m², y por mz cuando es manzanas.
 
 ## Desarrollo
 
