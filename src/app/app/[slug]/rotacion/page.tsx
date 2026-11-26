@@ -162,7 +162,7 @@ export default async function Rotacion({ params }: PageProps<"/app/[slug]/rotaci
                               <input type="hidden" name="loteId" value={l.id} />
                               <input type="hidden" name="potreroId" value={sugerido.id} />
                               {p && selectSalida(p.nombre)}
-                              <Submit className="btn min-h-10 w-full">
+                              <Submit className="btn w-full">
                                 <Repeat2 className="size-4" aria-hidden /> Mover a {sugerido.nombre}
                               </Submit>
                             </ActionForm>

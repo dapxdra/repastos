@@ -35,7 +35,7 @@ export function CunaForrajera({ barras, slug, entrada, residuo }: { barras: Barr
             </span>
           ))}
         </div>
-        <div className="min-w-0 flex-1 overflow-x-auto pb-1">
+        <div className="relative min-w-0 flex-1 overflow-x-auto pb-1">
           <div className="relative h-56" style={{ minWidth: `${n * 14}px` }}>
             {/* Cuadrícula */}
             {ticks.map((t) => (

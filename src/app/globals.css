@@ -162,6 +162,32 @@ h3 {
   }
 }
 
+/*
+ * Campo (Field) dentro de un grid: ocupa 2 filas compartidas con sus vecinos (etiqueta / control+ayuda)
+ * mediante subgrid, de modo que los controles de una misma fila quedan alineados al píxel aunque una
+ * etiqueta salte a dos líneas o solo un campo tenga texto de ayuda. Fuera de un grid es un bloque normal.
+ * Estructura esperada: <… class="field"><label class="label"/><envoltura de control y ayuda/></…>
+ * (Fuera de @layer: Tailwind descarta reglas de components cuyo selector empieza por una utilidad como .grid)
+ */
+.grid > .field,
+.grid > .field-accion {
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  row-gap: 0;
+}
+.grid > .field > .label {
+  align-self: end;
+}
+.grid > .field > :not(.label) {
+  align-self: start;
+}
+/* Botón que acompaña a una fila de campos: se alinea con los controles, no con la etiqueta ni la ayuda */
+.grid > .field-accion > * {
+  grid-row: 2;
+  align-self: start;
+}
+
 /* MapLibre */
 .maplibregl-ctrl-attrib {
   font-size: 10px;

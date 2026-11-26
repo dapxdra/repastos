@@ -136,7 +136,7 @@ export default async function Ajustes({ params }: PageProps<"/app/[slug]/ajustes
               <Field label="Rol" name="rol">
                 <select className="input" defaultValue="operador">{(["administrador", "operador", "lector"] as const).map((r) => <option key={r} value={r} title={ROLES[r]}>{r[0].toUpperCase() + r.slice(1)}</option>)}</select>
               </Field>
-              <Submit>Agregar</Submit>
+              <div className="field-accion"><Submit>Agregar</Submit></div>
             </ActionForm>
           )}
           <dl className="mt-4 grid gap-2 text-xs text-muted sm:grid-cols-2">

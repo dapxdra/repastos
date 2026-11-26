@@ -76,7 +76,7 @@ export default async function Labores({ params }: PageProps<"/app/[slug]/labores
                       </p>
                     </div>
                     {esOperador && (
-                      <BotonAccion action={completarEvento.bind(null, slug, g.grupoId)} className="btn-secondary min-h-10">
+                      <BotonAccion action={completarEvento.bind(null, slug, g.grupoId)} className="btn-secondary">
                         <CheckCircle2 className="size-4" aria-hidden />Hecha
                       </BotonAccion>
                     )}
@@ -98,7 +98,7 @@ export default async function Labores({ params }: PageProps<"/app/[slug]/labores
                     <th>Potreros</th>
                     <th className="text-right">Cantidad</th>
                     <th className="text-right">Costo</th>
-                    {esAdmin && <th className="sr-only">Acciones</th>}
+                    {esAdmin && <th><span className="sr-only">Acciones</span></th>}
                   </tr>
                 </thead>
                 <tbody>

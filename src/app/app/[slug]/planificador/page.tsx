@@ -71,7 +71,7 @@ export default async function Planificador({ params, searchParams }: PageProps<"
         descripcion="Ordena los próximos potreros de cada lote y compara el forraje que habrá al entrar con lo que el lote va a comer. Los potreros en tiempo de espera a esa fecha quedan marcados."
       />
 
-      <nav aria-label="Lotes" className="mb-4 flex gap-2 overflow-x-auto pb-1">
+      <nav aria-label="Lotes" className="relative mb-4 flex gap-2 overflow-x-auto pb-1">
         {lotes.map((l) => (
           <Link
             key={l.id}
@@ -119,7 +119,7 @@ export default async function Planificador({ params, searchParams }: PageProps<"
                       <th className="text-right">Días</th>
                       <th className="text-right">kg MS/ha al entrar</th>
                       <th>Oferta vs demanda</th>
-                      {esOperador && <th className="sr-only">Acciones</th>}
+                      {esOperador && <th><span className="sr-only">Acciones</span></th>}
                     </tr>
                   </thead>
                   <tbody>

@@ -77,7 +77,7 @@ export function ActionForm({
             ref={resumen}
             tabIndex={-1}
             role="alert"
-            className="flex items-start gap-2 rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger outline-none"
+            className="col-span-full flex items-start gap-2 rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger outline-none"
           >
             <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
             {estado.error}
@@ -85,7 +85,7 @@ export function ActionForm({
         )}
         <Fragment key={version}>{children}</Fragment>
         {estado?.ok && mostrarOk && (
-          <p role="status" className="flex items-center gap-1.5 text-sm font-medium text-primary">
+          <p role="status" className="col-span-full flex items-center gap-1.5 text-sm font-medium text-primary">
             <CheckCircle2 className="size-4" aria-hidden />
             {estado.mensaje}
           </p>
@@ -137,28 +137,31 @@ export function Field({
   const desc = [hint && `${id}-h`, error && `${id}-e`].filter(Boolean).join(" ") || undefined;
   const control = resolverHijo(children);
   return (
-    <div className={className}>
+    <div className={`field ${className}`}>
       <label htmlFor={id} className="label">
         {label}
         {required && <span className="text-danger" aria-hidden> *</span>}
       </label>
-      {cloneElement(control, {
-        id,
-        name,
-        "aria-invalid": error ? true : undefined,
-        "aria-describedby": desc,
-        ...(required ? { required: true } : {}),
-      })}
-      {hint && !error && (
-        <p id={`${id}-h`} className="hint">
-          {hint}
-        </p>
-      )}
-      {error && (
-        <p id={`${id}-e`} className="mt-1 text-xs font-medium text-danger">
-          {error}
-        </p>
-      )}
+      {/* Control + ayuda/error juntos: en un grid comparten la segunda fila del subgrid (ver .field en globals.css) */}
+      <div>
+        {cloneElement(control, {
+          id,
+          name,
+          "aria-invalid": error ? true : undefined,
+          "aria-describedby": desc,
+          ...(required ? { required: true } : {}),
+        })}
+        {hint && !error && (
+          <p id={`${id}-h`} className="hint">
+            {hint}
+          </p>
+        )}
+        {error && (
+          <p id={`${id}-e`} className="mt-1 text-xs font-medium text-danger">
+            {error}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

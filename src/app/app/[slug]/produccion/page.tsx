@@ -172,7 +172,7 @@ export default async function Produccion({ params }: PageProps<"/app/[slug]/prod
                 <p className="text-sm text-muted">Sin registros. Anota la entrega quincenal a la cooperativa o el total diario.</p>
               ) : (
                 <Tabla>
-                  <thead><tr><th>Período</th><th>Lote</th><th className="text-right">Litros</th><th className="text-right">L/vaca/día</th><th className="text-right">₡/L</th>{esAdmin && <th className="sr-only">Acciones</th>}</tr></thead>
+                  <thead><tr><th>Período</th><th>Lote</th><th className="text-right">Litros</th><th className="text-right">L/vaca/día</th><th className="text-right">₡/L</th>{esAdmin && <th><span className="sr-only">Acciones</span></th>}</tr></thead>
                   <tbody>
                     {registrosLeche.map((r) => {
                       const dias = diasEntre(r.desde, r.hasta) + 1;
@@ -204,7 +204,7 @@ export default async function Produccion({ params }: PageProps<"/app/[slug]/prod
               <p className="text-sm text-muted">Sin pesajes. Pesar cada 30–60 días muestra si el pasto alcanza.</p>
             ) : (
               <Tabla>
-                <thead><tr><th>Lote</th><th>Último pesaje</th><th className="text-right">Peso prom.</th><th className="text-right">Ganancia</th>{esAdmin && <th className="sr-only">Acciones</th>}</tr></thead>
+                <thead><tr><th>Lote</th><th>Último pesaje</th><th className="text-right">Peso prom.</th><th className="text-right">Ganancia</th>{esAdmin && <th><span className="sr-only">Acciones</span></th>}</tr></thead>
                 <tbody>
                   {porLote.map(({ l, ultimo, tramo }) => (
                     <tr key={l.id}>

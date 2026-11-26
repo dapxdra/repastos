@@ -84,7 +84,7 @@ export default async function Plagas({ params }: PageProps<"/app/[slug]/plagas">
             ) : (
               <Tabla>
                 <thead>
-                  <tr><th>Fecha</th><th>Potrero</th><th>Plaga</th><th className="text-right">Conteo</th><th>Nivel</th>{esAdmin && <th className="sr-only">Acciones</th>}</tr>
+                  <tr><th>Fecha</th><th>Potrero</th><th>Plaga</th><th className="text-right">Conteo</th><th>Nivel</th>{esAdmin && <th><span className="sr-only">Acciones</span></th>}</tr>
                 </thead>
                 <tbody>
                   {monitoreos.slice(0, 60).map((m) => {

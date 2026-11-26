@@ -353,7 +353,7 @@ export default async function DetallePotrero({ params }: PageProps<"/app/[slug]/
             <ActionForm action={subirArchivo.bind(null, slug)} className="flex flex-col gap-2 border-t border-border pt-3 sm:flex-row sm:items-end">
               <input type="hidden" name="potreroId" value={p.id} />
               <Field label="Archivo (máx. 10 MB)" name="archivo" className="flex-1">
-                <input className="input py-2 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-surface-2 file:px-3 file:py-1 file:text-sm" type="file" accept="image/*,application/pdf,.kml,.kmz,.txt,.csv" />
+                <input className="input py-[7px] text-sm file:mr-3 file:rounded-md file:border-0 file:bg-surface-2 file:px-3 file:py-1 file:text-sm" type="file" accept="image/*,application/pdf,.kml,.kmz,.txt,.csv" />
               </Field>
               <Submit className="btn"><Upload className="size-4" aria-hidden />Subir</Submit>
             </ActionForm>

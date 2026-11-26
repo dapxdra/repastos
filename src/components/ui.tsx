@@ -44,7 +44,8 @@ export function Card({
             {Icono && <Icono className="size-[18px] text-primary" aria-hidden />}
             {titulo}
           </h2>
-          {acciones}
+          {/* -my-2: un botón de 40 px no agranda el encabezado; tarjetas vecinas empiezan su contenido a la misma altura */}
+          {acciones && <div className="-my-2 flex shrink-0 items-center">{acciones}</div>}
         </div>
       )}
       {children}
@@ -126,7 +127,7 @@ export function Vacio({
 
 export function Tabla({ children }: { children: React.ReactNode }) {
   return (
-    <div className="-mx-4 overflow-x-auto sm:mx-0">
+    <div className="relative -mx-4 overflow-x-auto sm:mx-0">
       <table className="w-full min-w-[560px] text-left text-sm [&_td]:px-3 [&_td]:py-2.5 [&_th]:px-3 [&_th]:py-2 [&_th]:text-xs [&_th]:font-semibold [&_th]:text-muted [&_tbody_tr]:border-t [&_tbody_tr]:border-border">
         {children}
       </table>

@@ -23,13 +23,15 @@ const ok = (...xs: number[]) => xs.every((x) => Number.isFinite(x) && x >= 0);
 
 function Entrada({ label, value, onChange, sufijo, hint, step = "any" }: { label: string; value: string; onChange: (v: string) => void; sufijo?: string; hint?: string; step?: string }) {
   return (
-    <label className="block">
+    <label className="field block">
       <span className="label">{label}</span>
-      <span className="relative block">
-        <input className={`input ${sufijo ? "pr-16" : ""}`} type="number" inputMode="decimal" min={0} step={step} value={value} onChange={(e) => onChange(e.target.value)} />
-        {sufijo && <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-muted">{sufijo}</span>}
+      <span className="block">
+        <span className="relative block">
+          <input className={`input ${sufijo ? "pr-16" : ""}`} type="number" inputMode="decimal" min={0} step={step} value={value} onChange={(e) => onChange(e.target.value)} />
+          {sufijo && <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-muted">{sufijo}</span>}
+        </span>
+        {hint && <span className="hint block">{hint}</span>}
       </span>
-      {hint && <span className="hint block">{hint}</span>}
     </label>
   );
 }
@@ -75,7 +77,7 @@ function EtapaHoja({ d }: { d: Defaults }) {
   return (
     <Tarjeta titulo="Etapa de hoja" icono={Leaf} descripcion="Cuántas hojas lleva el rebrote y cuándo estará en su punto. Pastorear por hojas evita entrar tierno o pasado.">
       <div className="grid grid-cols-2 gap-3">
-        <label className="col-span-2 block">
+        <label className="field col-span-2 block">
           <span className="label">Pasto</span>
           <select className="input" value={pasto} onChange={(e) => setPasto(e.target.value)}>
             {[...PASTOS, PASTO_GENERICO].map((x) => <option key={x.clave} value={x.clave}>{x.label}</option>)}
@@ -124,7 +126,7 @@ function RespuestaN({ d }: { d: Defaults }) {
         <Entrada label={`Dosis de abono por ${ut}`} value={dosis} onChange={setDosis} sufijo="kg" />
         <Entrada label="Nitrógeno del abono" value={pctN} onChange={setPctN} sufijo="% N" hint="Urea 46, nitrato 33,5, sulfato 21" />
         <Entrada label="Precio del saco de 45 kg" value={saco} onChange={setSaco} sufijo="₡" step="100" />
-        <label className="block">
+        <label className="field block">
           <span className="label">Época</span>
           <select className="input" value={epoca} onChange={(e) => setEpoca(e.target.value as typeof epoca)}>
             <option value="lluvias">Lluvias (20 kg MS/kg N)</option>
@@ -236,7 +238,7 @@ function BancoForrajero({ d }: { d: Defaults }) {
   return (
     <Tarjeta titulo="Banco forrajero y cultivos de corta" icono={Scissors} descripcion="Cuánto cortar por día del banco forrajero, cuánto dura y si el área alcanza para cortar en rotación continua.">
       <div className="grid grid-cols-2 gap-3">
-        <label className="col-span-2 block">
+        <label className="field col-span-2 block">
           <span className="label">Cultivo</span>
           <select className="input" value={cultivo} onChange={(e) => elegir(Number(e.target.value))}>
             {CULTIVOS.map((x, i) => <option key={x.label} value={i}>{x.label}</option>)}
